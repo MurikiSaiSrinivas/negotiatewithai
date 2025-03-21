@@ -1,0 +1,608 @@
+/* style.css */
+:root {
+  --primary-color: #ff4500;
+  --secondary-color: #007AFF;
+  /* iMessage blue */
+  --background-color: #000000;
+  --card-background: #1C1C1E;
+  --message-bg-mine: #007AFF;
+  /* iMessage blue */
+  --message-bg-theirs: #353535;
+  /* Dark gray for opponent messages */
+  --text-color: #FFFFFF;
+  --border-color: #343536;
+  --success-color: #46d160;
+  --failure-color: #ff585b;
+  --inactive-color: #8E8E93;
+  /* Gray for inactive elements */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+h1 {
+  color: var(--primary-color);
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  opacity: 0.8;
+}
+
+.screen {
+  background-color: var(--card-background);
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.hidden {
+  display: none;
+}
+
+.primary-btn,
+.secondary-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.primary-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.secondary-btn {
+  background-color: transparent;
+  border: 2px solid var(--secondary-color);
+  color: var(--secondary-color);
+}
+
+.primary-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.secondary-btn:hover {
+  background-color: rgba(0, 122, 255, 0.1);
+}
+
+#start-screen {
+  text-align: center;
+  padding: 40px;
+  justify-content: center;
+  align-items: center;
+}
+
+#start-screen p {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+#game-screen {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.villain-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.villain-info {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.villain-name {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.scenario-box {
+  margin-bottom: 20px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.scenario-box h3 {
+  margin: 5px 0;
+  color: var(--secondary-color);
+  font-size: 16px;
+}
+
+.scenario-box p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Add these styles to your style.css file */
+
+.villain-info {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.villain-info:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-indicator {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--inactive-color);
+}
+
+.scenario-box {
+  margin-bottom: 20px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 15px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  max-height: 500px;
+  /* Adjust as needed */
+}
+
+/* Style for villain profile info */
+.villain-profile-info {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.villain-profile-info p {
+  margin-bottom: 5px;
+}
+
+.messages-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  padding: 10px 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 3px;
+}
+
+#messages-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message-row {
+  display: flex;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.villain-row {
+  justify-content: flex-start;
+}
+
+.player-row {
+  justify-content: flex-end;
+}
+
+.message {
+  max-width: 75%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  word-wrap: break-word;
+  font-size: 16px;
+  position: relative;
+}
+
+.villain-message {
+  background-color: var(--message-bg-theirs);
+  border-bottom-left-radius: 5px;
+}
+
+.player-message {
+  background-color: var(--message-bg-mine);
+  border-bottom-right-radius: 5px;
+  color: white;
+}
+
+.message-time {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-top: 2px;
+  text-align: center;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+  margin-top: auto;
+}
+
+#message-counter {
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: var(--inactive-color);
+  text-align: center;
+}
+
+.message-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#player-message {
+  /* background-color: #1e1e1f; */
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 12px 15px;
+  min-height: 46px;
+  resize: none;
+  flex-grow: 1;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+#player-message:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+}
+
+#send-message-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background-color: var(--secondary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 18px;
+}
+
+#send-message-btn:disabled {
+  background-color: var(--inactive-color);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.char-counter {
+  font-size: 12px;
+  color: var(--inactive-color);
+  text-align: right;
+  margin-top: 5px;
+}
+
+/* Results screen */
+.result-box {
+  text-align: center;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+  margin-bottom: 20px;
+}
+
+#verdict-title {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 25px;
+}
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex;
+  padding: 8px 13px;
+  background-color: var(--message-bg-theirs);
+  border-radius: 15px;
+  width: fit-content;
+  margin-bottom: 8px;
+  align-self: flex-start;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #9E9E9E;
+  border-radius: 50%;
+  margin: 0 1px;
+  animation: typingAnimation 1.5s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode system styling */
+@media (prefers-color-scheme: light) {
+  :root {
+    --background-color: #F2F2F7;
+    --card-background: #FFFFFF;
+    --text-color: #000000;
+    --border-color: #D1D1D6;
+    --message-bg-theirs: #E5E5EA;
+  }
+}
+
+/* Add these styles to your style.css file */
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background-color: var(--card-background);
+  margin: 10% auto;
+  padding: 0;
+  width: 85%;
+  max-width: 600px;
+  border-radius: 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.modal-header h2.success {
+  color: var(--success-color);
+}
+
+.modal-header h2.failure {
+  color: var(--failure-color);
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+}
+
+.close-modal {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--inactive-color);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close-modal:hover {
+  color: var(--text-color);
+}
+
+#view-feedback-btn {
+  width: 100%;
+  padding: 15px;
+  margin: 10px 0;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: var(--secondary-color);
+}
+
+#view-feedback-btn i {
+  font-size: 18px;
+}
+
+#modal-feedback-text p {
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+#modal-feedback-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* Animation for the feedback button */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+#view-feedback-btn {
+  animation: pulse 2s infinite;
+}
+
+#view-feedback-btn:hover {
+  animation: none;
+}
+
+/* Media queries for better mobile experience */
+@media (max-width: 600px) {
+  .modal-content {
+    width: 95%;
+    margin: 5% auto;
+    max-height: 90vh;
+  }
+
+  .modal-header {
+    padding: 15px;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .modal-footer {
+    padding: 10px 15px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-footer button {
+    width: 100%;
+  }
+}
+
+.feedback-heading {
+  padding: 10px;
+  background-color: #f1f1f1;
+  border: 1px solid #ddd;
+  margin-bottom: 2px;
+}
+
+.feedback-description {
+  padding: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+}
+
+.feedback-heading:hover {
+  background-color: #e7e7e7;
+}
