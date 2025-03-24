@@ -28,18 +28,18 @@ npm install
 ```
 
 ### 3️⃣ Set Up Environment Variables
-Create a `.env` file in the root directory and add the following:
-```env
-GEMINI_API_KEY=your_google_gemini_api_key
-REDDIT_CLIENT_ID=your_reddit_client_id
-REDDIT_CLIENT_SECRET=your_reddit_client_secret
-REDDIT_ACCESS_TOKEN=your_reddit_access_token
+Add the gemini-api-key to the secret storage:
+```bash
+devvit settings set gemini-api-key
 ```
 
-### 4️⃣ Run the Devvit App Locally
+### 4️⃣ Run the Devvit App
 ```bash
-devvit run
+devvit playtest negotiatewithai
 ```
+
+### 4️⃣ Open the Devvit App
+URL: [https://www.reddit.com/r/negotiatewithai/?playtest=negotiatewithai](https://www.reddit.com/r/negotiatewithai/?playtest=negotiatewithai)
 
 ## 📜 Game Flow
 1. **Start Game** → AI generates a **scenario, villain profile, and first message**.
