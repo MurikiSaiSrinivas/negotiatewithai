@@ -1,7 +1,7 @@
 /** Message from Devvit to the web view. */
 // message.ts
 export type DevvitMessage =
-  | { type: 'initialData'; data: { username: string; apiKey: string } }
+  | { type: 'initialData'; data: { username: string} }
   | { type: 'updateCounter'; data: { currentCounter: number } }
   | { type: 'gameStart'; data: { scenario: string; villainProfile: { name: string, role: string, personality: string, motivation: string }; firstMessage: string } }
   | { type: 'villainResponse'; data: { message: string; indicator?: string } }
@@ -11,7 +11,7 @@ export type DevvitMessage =
 export type WebViewMessage =
   | { type: 'webViewReady' }
   | { type: 'startGame' }
-  | { type: 'playerMessage'; data: { negotiationHistory: any, final: boolean } }
+  | { type: 'playerMessage'; data: { negotiationHistory: any, final: boolean, gameState?: any } }
   | { type: 'shareResults'; data: { negotiationHistory: any } };
 
 /**

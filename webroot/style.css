@@ -14,6 +14,8 @@
   --success-color: #46d160;
   --failure-color: #ff585b;
   --inactive-color: #8E8E93;
+
+  overflow: hidden;
   /* Gray for inactive elements */
 }
 
@@ -114,6 +116,9 @@ h1 {
 #game-screen {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: hidden;
 }
 
 .chat-header {
@@ -123,6 +128,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .villain-avatar {
@@ -150,12 +156,12 @@ h1 {
   font-size: 18px;
 }
 
-.scenario-box {
+/* .scenario-box {
   margin-bottom: 20px;
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 12px;
   padding: 15px;
-}
+} */
 
 .scenario-box h3 {
   margin: 5px 0;
@@ -195,10 +201,13 @@ h1 {
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 12px;
   padding: 15px;
-  overflow: hidden;
   transition: all 0.3s ease;
   max-height: 500px;
   /* Adjust as needed */
+}
+
+.scenario-box.scenario-text{
+  overflow-y: auto;
 }
 
 /* Style for villain profile info */
@@ -219,6 +228,7 @@ h1 {
   padding: 10px 5px;
   display: flex;
   flex-direction: column;
+  z-index: 1;
 }
 
 .messages-container::-webkit-scrollbar {
@@ -296,6 +306,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 10px;
+  z-index: 1;
 }
 
 #player-message {
@@ -605,4 +616,26 @@ h1 {
 
 .feedback-heading:hover {
   background-color: #e7e7e7;
+}
+
+.stamp-div {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+}
+
+.stamp-div img {
+  animation: stamp 1s 1;
+}
+
+@keyframes stamp {
+  0% {
+    width: 100vw;
+    height: 100vw;
+  }
+
+  100% {
+    width: 241px;
+    height: 226px;
+  }
 }

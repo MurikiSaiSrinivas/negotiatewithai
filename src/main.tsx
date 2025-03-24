@@ -1,10 +1,13 @@
 import './createPost.js';
 
-import { Devvit, useState, useWebView } from '@devvit/public-api';
+import { Devvit, JSONObject, useState, useWebView } from '@devvit/public-api';
 
 import type { DevvitMessage, WebViewMessage } from './message.js';
 import { getStory, getVillianMessage } from './gemini.server.js';
 import { fakeStory } from './story-model.js';
+import { AfterGame } from './AfterGame.js';
+import { BeforeGame } from './BeforeGame.js';
+import { nameBackSvg } from './negotiation.js';
 
 Devvit.configure({
   http: true,
@@ -44,7 +47,10 @@ Devvit.addCustomPostType({
     const [apiKey] = useState(async () => {
       return (await context.settings.get("gemini-api-key")) ?? 'anon';
     });
-    // console.log("apiKey", apiKey)
+
+
+
+    const [isEnd, setIsEnd] = useState<{ val: boolean, data: JSONObject }>({ val: false, data: {} });
 
     const webView = useWebView<WebViewMessage, DevvitMessage>({
       // URL of your web view content
@@ -57,8 +63,7 @@ Devvit.addCustomPostType({
             webView.postMessage({
               type: 'initialData',
               data: {
-                username: username,
-                apiKey: apiKey as string
+                username: username
               },
             });
 
@@ -73,22 +78,13 @@ Devvit.addCustomPostType({
               // },
             });
             break;
-          // case 'startGame':
-          //   // const story = await getStory(apiKey as string)
-          //   webView.postMessage({
-          //     type: 'gameStart',
-          //     data: fakeStory
-          //     // data: {
-          //     //   scenario: story.response.scenario,
-          //     //   villainProfile: story.response.villainProfile,
-          //     //   firstMessage: story.response.villainFirstMessage
-          //     // },
-          //   });
-          //   break;
-
           case "playerMessage":
             console.log(message)
             const villainResponse = await getVillianMessage(apiKey as string, message.data.final, message.data.negotiationHistory)
+            message.data.final && setIsEnd({
+              val: true,
+              data: message.data.gameState
+            })
             message.data.final ?
               webView.postMessage({
                 type: 'gameEnd',
@@ -116,36 +112,45 @@ Devvit.addCustomPostType({
       },
     });
 
+    const dimensions = context.dimensions;
+
     // Render the custom post type
+    const resizeWidth = dimensions != undefined ? dimensions.width : 800
+    const resizeHeight = dimensions != undefined ? dimensions.height : 800
+    // console.log(resizeHeight, resizeWidth, resizeHeight - 20, resizeWidth - 20)
     return (
-      <vstack grow padding="small">
-        <image url='./Negotiation-back.JPG' imageHeight="100px" imageWidth="100px"></image>
-        <vstack grow alignment="middle center">
-          <text size="xlarge" weight="bold">
-            Welcome to Negotiate With AI..
-          </text>
-          <spacer />
-          <vstack alignment="start middle">
-            <hstack>
-              <text size="medium">Username:</text>
-              <text size="medium" weight="bold">
-                {' '}
-                {username ?? ''}
-              </text>
-            </hstack>
-            <hstack>
-              <text size="medium">Current counter:</text>
-              <text size="medium" weight="bold">
-                {' '}
-              </text>
-            </hstack>
+
+      <blocks height='tall'>
+        <zstack maxWidth={800} backgroundColor='#1C1C1C'>
+          {/* <GameBackground /> */}
+          <vstack width={`${resizeWidth}px`} height={`${resizeHeight}px`} padding='large'>
+            <image
+              imageHeight={resizeHeight - 20}
+              imageWidth={resizeWidth - 20}
+              height={"100%"}
+              width={"100%"}
+              description={""}
+              resizeMode="fill"
+
+              // url={context.assets.getURL('background.JPG')}
+              url={nameBackSvg}
+            />
           </vstack>
-          <spacer />
-          <button onPress={() => webView.mount()}>Launch App</button>
-        </vstack>
-      </vstack>
+          <vstack width={`${resizeWidth}px`} height={`${resizeHeight}px`} padding='large'>
+            {!isEnd.val ?
+              <BeforeGame username={username} mount={webView.mount} />
+              :
+              <AfterGame context={context} username={username} gameState={isEnd.data} />
+            }
+          </vstack>
+        </zstack>
+      </blocks>
+
     );
   },
 });
 
 export default Devvit;
+
+
+

@@ -45,7 +45,7 @@ window.addEventListener('load', () => {
   devvit.postMessage({ type: 'webViewReady' });
 });
 
-chatHeader.addEventListener('click', () => {
+const dropdownOpenClose = () => {
   isExpanded = !isExpanded;
 
   if (isExpanded) {
@@ -57,7 +57,9 @@ chatHeader.addEventListener('click', () => {
     scenarioBox.style.opacity = '0';
     dropdownIndicator.innerHTML = '<img src="./assets/c-up.png" alt="drop down close">';
   }
-});
+}
+
+chatHeader.addEventListener('click', dropdownOpenClose);
 
 // Function to replace input container with feedback button
 function showFeedbackButton() {
@@ -149,11 +151,11 @@ function openFeedbackModal(verdict, feedback) {
   const modalFeedbackText = document.getElementById('modal-feedback-text');
 
   if (verdict === "win") {
-    modalVerdictTitle.textContent = "Negotiation Successull!!";
+    modalVerdictTitle.textContent = "Negotiation is Success!!";
     modalVerdictTitle.className = "success";
   }
   if (verdict === "loose") {
-    modalVerdictTitle.textContent = "Negotiation Failure!!";
+    modalVerdictTitle.textContent = "Negotitation is Failure!!";
     modalVerdictTitle.className = "failure";
   }
 
@@ -195,7 +197,6 @@ function openFeedbackModal(verdict, feedback) {
 // Listen for messages from Devvit
 window.addEventListener('message', (event) => {
   const message = event.data.data.message;
-  console.log("message:", message)
 
   switch (message.type) {
     case 'initialData':
@@ -253,13 +254,13 @@ window.addEventListener('message', (event) => {
       // Display villain's first message with typing indicator
       showTypingIndicator();
       setTimeout(() => {
+        if (isExpanded) {
+          dropdownOpenClose();
+        }
         hideTypingIndicator();
         addMessage(gameState.firstMessage, 'villain');
-      }, 1500);
-      // setupVillainInfoToggle();
+      }, 3000);
 
-      // Show game screen
-      // resultsScreen.classList.add('hidden');
       break;
 
     case 'villainResponse':
@@ -270,6 +271,7 @@ window.addEventListener('message', (event) => {
       setTimeout(() => {
         hideTypingIndicator();
         addMessage(message.data.message, 'villain');
+        addMessage(message.data.indicator, 'expression')
 
         if (gameState.messageCount < MSG_LIMIT) {
           // Enable input for next player message
@@ -287,11 +289,21 @@ window.addEventListener('message', (event) => {
       setTimeout(() => {
         hideTypingIndicator();
         addMessage(message.data.message, 'villain');
+        addMessage(message.data.indicator, 'expression')
 
         // Game over, update game state
         gameState.gameOver = true;
         gameState.verdict = message.data.verdict;
         gameState.feedback = message.data.feedback;
+
+        const stampDiv = document.createElement('div')
+        stampDiv.innerHTML = message.data.verdict === 'win' ?
+          "<img src='./assets/Success.png' alt='Won the Negotiation'/>" :
+          "<img src='./assets/Failure.png' alt='Lost the Negotiation'/>"
+        stampDiv.className = "stamp-div"
+
+        gameScreen.appendChild(stampDiv)
+
 
         // Replace input with feedback button instead of showing results screen
         showFeedbackButton();
@@ -369,7 +381,8 @@ function sendPlayerMessage() {
         villainProfile: gameState.villainProfile,
         messages: gameState.messages,
       },
-      final: gameState.messageCount === MSG_LIMIT - 1
+      final: gameState.messageCount === MSG_LIMIT - 1,
+      gameState: gameState.messageCount === MSG_LIMIT - 1 && gameState
     }
   });
 
@@ -381,7 +394,6 @@ function sendPlayerMessage() {
   gameState.messageCount++;
   messageCounter.textContent = `${MSG_LIMIT - gameState.messageCount} messages remaining`;
 
-  console.log("2nd check:", gameState.messageCount, MSG_LIMIT)
   // If this was the final message, update counter text
   if (gameState.messageCount === MSG_LIMIT) {
     messageCounter.textContent = 'Final message sent';
@@ -392,8 +404,10 @@ function sendPlayerMessage() {
 
 // Add a message to the conversation
 function addMessage(text, sender) {
-  console.log("new message:", text, sender)
   // Create message row
+  if (sender === "expression") {
+    sender = "villain"
+  }
   const messageRow = document.createElement('div');
   messageRow.className = `message-row ${sender}-row`;
 
@@ -464,3 +478,134 @@ function scrollToBottom() {
   const messagesContainer = document.querySelector('.messages-container');
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
+
+// Generate a visually appealing transcript for sharing
+function generateShareableTranscript() {
+  const transcript = document.createElement('div');
+  transcript.className = 'negotiation-transcript';
+
+  // Add scenario
+  const scenarioElement = document.createElement('div');
+  scenarioElement.className = 'transcript-scenario';
+  scenarioElement.innerHTML = `<h3>Scenario:</h3><p>${gameState.scenario}</p>`;
+  transcript.appendChild(scenarioElement);
+
+  // Add villain profile
+  const villainElement = document.createElement('div');
+  villainElement.className = 'transcript-villain';
+  villainElement.innerHTML = `<h3>Faced: ${gameState.villainProfile.name}</h3>`;
+
+  Object.entries(gameState.villainProfile).forEach(([key, value]) => {
+    if (key !== 'name') {
+      villainElement.innerHTML += `<p><b>${key.charAt(0).toUpperCase() + key.slice(1)}:</b> ${value}</p>`;
+    }
+  });
+  transcript.appendChild(villainElement);
+
+  // Add messages
+  const messagesElement = document.createElement('div');
+  messagesElement.className = 'transcript-messages';
+
+  // First villain message
+  messagesElement.innerHTML += `<div class="transcript-message villain">
+    <div class="message-sender">Villain:</div>
+    <div class="message-text">${gameState.firstMessage}</div>
+  </div>`;
+
+  // Rest of messages
+  gameState.messages.forEach((msg, index) => {
+    const sender = msg.role === "user" ? "You" : "Villain";
+    const className = msg.role === "user" ? "player" : "villain";
+
+    messagesElement.innerHTML += `<div class="transcript-message ${className}">
+      <div class="message-sender">${sender}:</div>
+      <div class="message-text">${msg.parts[0].text}</div>
+    </div>`;
+  });
+
+  transcript.appendChild(messagesElement);
+
+  // Add verdict
+  const verdictElement = document.createElement('div');
+  verdictElement.className = 'transcript-verdict';
+  verdictElement.innerHTML = `<h3>${verdictTitle.textContent}</h3>`;
+  verdictElement.innerHTML += `<p>${feedbackText.textContent}</p>`;
+  transcript.appendChild(verdictElement);
+
+  const transcriptStyle = document.createElement('style');
+  transcriptStyle.textContent = `
+  .negotiation-transcript {
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #1C1C1E;
+    color: #FFFFFF;
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  
+  .transcript-scenario, .transcript-villain, .transcript-verdict {
+    padding: 15px;
+    border-bottom: 1px solid #343536;
+  }
+  
+  .transcript-messages {
+    padding: 10px;
+  }
+  
+  .transcript-message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 10px;
+  }
+  
+  .transcript-message.villain {
+    background-color: #353535;
+    margin-right: 20%;
+  }
+  
+  .transcript-message.player {
+    background-color: #007AFF;
+    margin-left: 20%;
+  }
+  
+  .message-sender {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .transcript-verdict h3 {
+    color: #ff4500;
+    margin-bottom: 10px;
+  }
+`;
+
+  return transcript;
+}
+
+// Update your share button click handler to use this
+// shareBtn.addEventListener('click', () => {
+//   // Generate the transcript HTML
+//   const transcriptHTML = generateShareableTranscript().outerHTML;
+
+//   // Prepare data for sharing
+//   const negotiationHistory = {
+//     scenario: gameState.scenario,
+//     villainProfile: gameState.villainProfile,
+//     messages: [gameState.firstMessage, ...gameState.messages],
+//     verdict: verdictTitle.textContent,
+//     feedback: feedbackText.textContent,
+//     transcriptHTML: transcriptHTML
+//   };
+
+//   devvit.postMessage({
+//     type: 'shareResults',
+//     data: {
+//       negotiationHistory: negotiationHistory
+//     }
+//   });
+// });
+
+// Add CSS for the transcript
+
+// document.head.appendChild(transcriptStyle);

@@ -11,46 +11,49 @@
 
 <body>
   <div class="container">
-    <header>
+    <!-- <header>
       <h1>Negotiate With AI</h1>
       <p class="subtitle">Test your negotiation skills against an AI villain</p>
-    </header>
+    </header> -->
 
-    <div id="game-container">
-      <!-- Game screen -->
-      <div id="game-screen" class="screen hidden">
-        <div class="chat-header">
-          <div class="villain-info">
-            <div id="villain-name" class="villain-name">Evil Mastermind</div>
-            <div id="message-counter">5 messages remaining</div>
-          </div>
-          <div class="dropdown-indicator">
-            <img src="./assets/c-up.png" alt="drop down close">
-          </div>
+    <!-- <div id="game-container"> -->
+    <!-- Game screen -->
+    <div id="game-screen" class="screen">
+      <div class="chat-header">
+        <div class="villain-info">
+          <div id="villain-name" class="villain-name">Evil Mastermind</div>
+          <div id="message-counter">5 messages remaining</div>
         </div>
+        <div class="dropdown-indicator">
+          <img src="./assets/c-up.png" alt="drop down close">
+        </div>
+      </div>
 
-        <div class="scenario-box">
+
+      <div class="scenario-box">
+        <div class="scenario-container">
           <h3>Scenario:</h3>
           <p id="scenario-text"></p>
         </div>
+      </div>
 
-        <div class="messages-container">
-          <div id="messages-box"></div>
+      <div class="messages-container">
+        <div id="messages-box"></div>
+      </div>
+
+      <div class="input-container">
+        <div class="message-input-row">
+          <textarea id="player-message" maxlength="200" placeholder="iMessage"></textarea>
+          <button id="send-message-btn" class="primary-btn" disabled>
+            <img src="./assets/send.png" alt="send-message-btn">
+          </button>
         </div>
-
-        <div class="input-container">
-          <div class="message-input-row">
-            <textarea id="player-message" maxlength="200" placeholder="iMessage"></textarea>
-            <button id="send-message-btn" class="primary-btn" disabled>
-              <img src="./assets/send.png" alt="send-message-btn">
-            </button>
-          </div>
-          <div class="char-counter">
-            <span id="char-count">0</span>/200
-          </div>
+        <div class="char-counter">
+          <span id="char-count">0</span>/200
         </div>
       </div>
     </div>
+    <!-- </div> -->
   </div>
 
   <script src="./script.js"></script>
