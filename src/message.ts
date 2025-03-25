@@ -11,7 +11,7 @@ export type DevvitMessage =
 export type WebViewMessage =
   | { type: 'webViewReady' }
   | { type: 'startGame' }
-  | { type: 'playerMessage'; data: { negotiationHistory: any, final: boolean, gameState?: any } }
+  | { type: 'playerMessage'; data: { negotiationHistory: any, final: boolean } }
   | { type: 'shareResults'; data: { negotiationHistory: any } };
 
 /**

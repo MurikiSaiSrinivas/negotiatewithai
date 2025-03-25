@@ -37,7 +37,7 @@ Devvit.addCustomPostType({
   name: 'Negotiate With AI',
   description: "Test your negotiation skills against an AI villain",
   height: 'tall',
-  render: (context) => {
+  render: async (context) => {
 
     // Load username with `useAsync` hook
     const [username] = useState(async () => {
@@ -48,9 +48,21 @@ Devvit.addCustomPostType({
       return (await context.settings.get("gemini-api-key")) ?? 'anon';
     });
 
+    const [isEnd, setIsEnd] = useState<boolean>(false);
 
+    const initGameState = async (scenario: any, villainProfile: any) => {
+      await context.redis.set("game-state", JSON.stringify({
+        scenario: scenario,
+        villainProfile: villainProfile,
+        username: username,
+        final: false
+      }))
+      await context.redis.set("messages", JSON.stringify([]))
+    }
 
-    const [isEnd, setIsEnd] = useState<{ val: boolean, data: JSONObject }>({ val: false, data: {} });
+    const updateMessages = async (messages: any) => {
+      await context.redis.set("messages", JSON.stringify(messages))
+    }
 
     const webView = useWebView<WebViewMessage, DevvitMessage>({
       // URL of your web view content
@@ -68,6 +80,7 @@ Devvit.addCustomPostType({
             });
 
             // const story = await getStory(apiKey as string)
+            initGameState(fakeStory.scenario, fakeStory.villainProfile)
             webView.postMessage({
               type: 'gameStart',
               data: fakeStory
@@ -81,10 +94,8 @@ Devvit.addCustomPostType({
           case "playerMessage":
             console.log(message)
             const villainResponse = await getVillianMessage(apiKey as string, message.data.final, message.data.negotiationHistory)
-            message.data.final && setIsEnd({
-              val: true,
-              data: message.data.gameState
-            })
+            updateMessages(message.data.negotiationHistory.messages)
+            message.data.final && setIsEnd(true)
             message.data.final ?
               webView.postMessage({
                 type: 'gameEnd',
@@ -137,10 +148,10 @@ Devvit.addCustomPostType({
             />
           </vstack>
           <vstack width={`${resizeWidth}px`} height={`${resizeHeight}px`} padding='large'>
-            {!isEnd.val ?
+            {!isEnd ?
               <BeforeGame username={username} mount={webView.mount} />
               :
-              <AfterGame context={context} username={username} gameState={isEnd.data} />
+              <AfterGame context={context} username={username} gameState={undefined}/>
             }
           </vstack>
         </zstack>
