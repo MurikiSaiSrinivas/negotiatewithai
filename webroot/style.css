@@ -475,6 +475,14 @@ h1 {
   flex-direction: column;
 }
 
+.loading-content {
+  padding: 16px !important;
+  justify-content: center;
+  align-items: center;
+  height: 80%;
+  text-align: center;
+}
+
 @keyframes slideIn {
   from {
     transform: translateY(-50px);

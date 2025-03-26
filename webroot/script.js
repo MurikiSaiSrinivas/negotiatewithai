@@ -13,7 +13,7 @@ let gameState = {
   feedback: []
 };
 
-const MSG_LIMIT = 2
+const MSG_LIMIT = 5
 let isExpanded = true;
 
 // DOM Elements
@@ -60,6 +60,26 @@ const dropdownOpenClose = () => {
 }
 
 chatHeader.addEventListener('click', dropdownOpenClose);
+
+const loadingModal = document.createElement('div');
+loadingModal.id = 'loading-modal';
+loadingModal.className = 'modal';
+
+// Modal content
+loadingModal.innerHTML = `
+      <div class="modal-content loading-content">
+        <h3>Loading....</h3>
+        <p>Hello Negotiater, We are connecting with your villain. Please Hold on!!</p>
+        <br/>
+        <p>Details about the villain can be seen by click on the chat header i.e., on villain name</p>
+      </div>
+    `;
+
+document.body.appendChild(loadingModal);
+
+// Show the modal
+loadingModal.style.display = 'block';
+
 
 // Function to replace input container with feedback button
 function showFeedbackButton() {
@@ -214,6 +234,8 @@ window.addEventListener('message', (event) => {
         scenarioBox.removeChild(existingProfileInfo);
       }
       scenarioBox.appendChild(villainProfileInfo);
+
+      loadingModal.style.display = "none"
 
       // Clear previous messages
       messagesBox.innerHTML = '';

@@ -7,7 +7,6 @@ import { getStory, getVillianMessage } from './gemini.server.js';
 import { AfterGame } from './AfterGame.js';
 import { BeforeGame } from './BeforeGame.js';
 import { emojis, failureSvg, nameBackSvg, successSvg } from './negotiation.js';
-import { fakeStory } from './story-model.js';
 
 Devvit.configure({
   http: true,
@@ -32,7 +31,6 @@ Devvit.addCustomPostType({
   description: "Test your negotiation skills against an AI villain",
   height: 'tall',
   render: (context) => {
-
     // Fetch user data and API key
     const [username] = useState(async () => {
       return (await context.reddit.getCurrentUsername()) ?? 'anon';
