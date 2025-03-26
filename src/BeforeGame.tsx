@@ -25,6 +25,18 @@ export const BeforeGame = (props: { username: string, mount: any }): JSX.Element
                 Test your persuasion skills against a cunning AI villain
             </text>
 
+            <vstack gap="small" alignment="center middle" width="100%">
+                <text color="#CCCCCC">Welcome, User {username}</text>
+
+                <button
+                    // appearance=""
+                    size="large"
+                    onPress={mount}
+                >
+                    BEGIN NEGOTIATION
+                </button>
+            </vstack>
+
             <vstack
                 padding="medium"
                 backgroundColor="#2A2A2A"
@@ -32,6 +44,7 @@ export const BeforeGame = (props: { username: string, mount: any }): JSX.Element
                 gap="medium"
                 width="100%"
             >
+
                 <hstack alignment="center middle" gap="small">
                     <icon name="warning" color="#FFCC00" size="small" />
                     <text weight="bold" color="#FFFFFF">Game Overview</text>
@@ -40,18 +53,6 @@ export const BeforeGame = (props: { username: string, mount: any }): JSX.Element
                 < text wrap color="#CCCCCC" alignment="center">
                     Face a unique AI villain in a high-stakes negotiation with just 5 messages to succeed
                 </text>
-
-                <vstack gap="small" alignment="center middle" width="100%">
-                    <text color="#CCCCCC">Welcome, User {username}</text>
-
-                    <button
-                        // appearance=""
-                        size="large"
-                        onPress={mount}
-                    >
-                        BEGIN NEGOTIATION
-                    </button>
-                </vstack>
 
                 <vstack gap="small" padding="small">
                     <hstack gap="small">
