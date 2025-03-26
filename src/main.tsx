@@ -1,13 +1,12 @@
 import './createPost.js';
 
-import { Devvit, JSONObject, useState, useWebView } from '@devvit/public-api';
+import { Devvit, useState, useWebView } from '@devvit/public-api';
 
 import type { DevvitMessage, WebViewMessage } from './message.js';
 import { getStory, getVillianMessage } from './gemini.server.js';
-import { fakeStory } from './story-model.js';
 import { AfterGame } from './AfterGame.js';
 import { BeforeGame } from './BeforeGame.js';
-import { nameBackSvg } from './negotiation.js';
+import { emojis, failureSvg, nameBackSvg, successSvg } from './negotiation.js';
 
 Devvit.configure({
   http: true,
@@ -37,9 +36,13 @@ Devvit.addCustomPostType({
   name: 'Negotiate With AI',
   description: "Test your negotiation skills against an AI villain",
   height: 'tall',
-  render: async (context) => {
+  render: (context) => {
 
-    // Load username with `useAsync` hook
+    // Fetch user data and API key
+
+    // let username = await context.reddit.getCurrentUsername() || 'anon';
+    // let apiKey = await context.settings.get("gemini-api-key") || 'anon';
+
     const [username] = useState(async () => {
       return (await context.reddit.getCurrentUsername()) ?? 'anon';
     });
@@ -48,21 +51,67 @@ Devvit.addCustomPostType({
       return (await context.settings.get("gemini-api-key")) ?? 'anon';
     });
 
-    const [isEnd, setIsEnd] = useState<boolean>(false);
+    console.log("Username:", username);
+    console.log("API Key Retrieved:", apiKey || apiKey !== 'anon' ? "Yes" : "No");
 
-    const initGameState = async (scenario: any, villainProfile: any) => {
-      await context.redis.set("game-state", JSON.stringify({
-        scenario: scenario,
-        villainProfile: villainProfile,
-        username: username,
-        final: false
-      }))
-      await context.redis.set("messages", JSON.stringify([]))
-    }
+    // Fetch game state
+    const gameStateKey = `game-state-${context.postId}`;
+    const messagesKey = `messages-${context.postId}`;
+
+
+    const [isEnd, setIsEnd] = useState<{ val: boolean, gameState: any }>(async () => {
+      const stateString = await context.redis.get(gameStateKey);
+      const stateMessages = await context.redis.get(messagesKey);
+      if (stateString && stateMessages) {
+        const data = JSON.parse(stateString)
+        return {
+          val: data.final,
+          gameState: { ...data, messages: JSON.parse(stateMessages) },
+        };
+      }
+      return { val: false, gameState: {} }
+    });
 
     const updateMessages = async (messages: any) => {
-      await context.redis.set("messages", JSON.stringify(messages))
+      await context.redis.set(messagesKey, JSON.stringify(messages));
+    };
+
+    const updateGameState = async (gameState: any) => {
+      await context.redis.set(gameStateKey, JSON.stringify(gameState));
     }
+
+    const initGameState = async (scenario: string, villainProfile: { name: string; role: string; personality: string; motivation: string; }) => {
+      const newState = {
+        scenario,
+        villainProfile,
+        username,
+        final: false,
+      };
+      setIsEnd({ val: false, gameState: newState });
+      updateGameState(newState);
+      updateMessages([]);
+    };
+
+    const finalState = async (messages: any, feedback: any, verdict: any) => {
+      setIsEnd((prev) => ({
+        val: true,
+        gameState: {
+          ...prev.gameState,
+          final: true,
+          messages,
+          feedback,
+          verdict,
+        },
+      }));
+      console.log("isEnd", isEnd.gameState)
+      updateGameState({
+        ...isEnd.gameState, final: true,
+        feedback,
+        verdict
+      });
+      messages.map((msg: any) => console.log(msg))
+      updateMessages(messages);
+    };
 
     const webView = useWebView<WebViewMessage, DevvitMessage>({
       // URL of your web view content
@@ -71,51 +120,34 @@ Devvit.addCustomPostType({
       // Handle messages sent from the web view.
       async onMessage(message, webView) {
         switch (message.type) {
+
           case 'webViewReady':
+            webView.postMessage({ type: 'initialData', data: { username } });
+            const story = await getStory(apiKey as string)
+            await initGameState(story.response.scenario, story.response.villainProfile);
             webView.postMessage({
-              type: 'initialData',
-              data: {
-                username: username
+              type: 'gameStart', data: {
+                scenario: story.response.scenario,
+                villainProfile: story.response.villainProfile,
+                firstMessage: story.response.villainFirstMessage
               },
             });
+            break;
 
-            // const story = await getStory(apiKey as string)
-            initGameState(fakeStory.scenario, fakeStory.villainProfile)
-            webView.postMessage({
-              type: 'gameStart',
-              data: fakeStory
-              // data: {
-              //   scenario: story.response.scenario,
-              //   villainProfile: story.response.villainProfile,
-              //   firstMessage: story.response.villainFirstMessage
-              // },
-            });
+          case 'playerMessage':
+            const villainResponse = await getVillianMessage(apiKey as string, message.data.final, message.data.negotiationHistory);
+            if (message.data.final) {
+              const finalMessage = [...message.data.negotiationHistory.messages, { role: 'model', parts: [{ text: villainResponse.response }] }, { role: 'model', parts: [{ text: villainResponse.indicator }] }]
+              await finalState(finalMessage, villainResponse.feedback, villainResponse.verdict);
+              webView.postMessage({ type: 'gameEnd', data: { message: villainResponse.response, ...villainResponse } });
+            } else {
+              updateMessages(message.data.negotiationHistory.messages);
+              webView.postMessage({ type: 'villainResponse', data: { message: villainResponse.response, indicator: villainResponse.indicator } });
+            }
             break;
-          case "playerMessage":
-            console.log(message)
-            const villainResponse = await getVillianMessage(apiKey as string, message.data.final, message.data.negotiationHistory)
-            updateMessages(message.data.negotiationHistory.messages)
-            message.data.final && setIsEnd(true)
-            message.data.final ?
-              webView.postMessage({
-                type: 'gameEnd',
-                data: {
-                  message: villainResponse.response,
-                  indicator: villainResponse.indicator,
-                  verdict: villainResponse.verdict,
-                  feedback: villainResponse.feedback
-                },
-              }) :
-              webView.postMessage({
-                type: 'villainResponse',
-                data: {
-                  message: villainResponse.response,
-                  indicator: villainResponse.indicator
-                },
-              });
-            break;
+
           default:
-            throw new Error(`Unknown message type: ${message}`);
+            console.warn("Unknown message type received:", message.type);
         }
       },
       onUnmount() {
@@ -123,36 +155,46 @@ Devvit.addCustomPostType({
       },
     });
 
-    const dimensions = context.dimensions;
+    const { width = 800, height = 800 } = context.dimensions || {};
 
-    // Render the custom post type
-    const resizeWidth = dimensions != undefined ? dimensions.width : 800
-    const resizeHeight = dimensions != undefined ? dimensions.height : 800
-    // console.log(resizeHeight, resizeWidth, resizeHeight - 20, resizeWidth - 20)
     return (
 
       <blocks height='tall'>
         <zstack maxWidth={800} backgroundColor='#1C1C1C'>
-          {/* <GameBackground /> */}
-          <vstack width={`${resizeWidth}px`} height={`${resizeHeight}px`} padding='large'>
+          <vstack width={`${width}px`} height={`${height}px`}>
+            <text wrap height={"100%"} width={"100%"} size='xxlarge'>{emojis}{emojis}{emojis}</text>
+          </vstack>
+          <vstack width={`${width}px`} height={`${height}px`} backgroundColor='rgba(0,0,0,0.8)'>
+          </vstack>
+          <vstack width={`${width}px`} height={`${height}px`} padding='large'>
             <image
-              imageHeight={resizeHeight - 20}
-              imageWidth={resizeWidth - 20}
-              height={"100%"}
-              width={"100%"}
-              description={""}
-              resizeMode="fill"
-
-              // url={context.assets.getURL('background.JPG')}
+              imageHeight={height - 20}
+              imageWidth={width - 20}
+              height={'100%'}
+              width={'100%'}
+              description={'Background Image'}
+              resizeMode='fill'
               url={nameBackSvg}
             />
           </vstack>
-          <vstack width={`${resizeWidth}px`} height={`${resizeHeight}px`} padding='large'>
-            {!isEnd ?
+          <vstack width={`${width}px`} height={`${height}px`} padding='medium'>
+            {!isEnd.val ? (
               <BeforeGame username={username} mount={webView.mount} />
-              :
-              <AfterGame context={context} username={username} gameState={undefined}/>
-            }
+            ) : (
+              <AfterGame context={context} username={username} gameState={isEnd.gameState} />
+            )}
+          </vstack>
+          <vstack width={`${width}px`} height={`${height}px`} alignment='bottom end'>
+            {isEnd.val &&
+              <image
+                imageHeight={height}
+                imageWidth={width}
+                height={'20%'}
+                width={'20%'}
+                description={'Success or Failure stamp'}
+                resizeMode='fill'
+                url={isEnd.gameState.verdict === 'win' ? successSvg : failureSvg}
+              />}
           </vstack>
         </zstack>
       </blocks>
@@ -162,6 +204,3 @@ Devvit.addCustomPostType({
 });
 
 export default Devvit;
-
-
-

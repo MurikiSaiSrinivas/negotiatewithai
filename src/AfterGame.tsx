@@ -6,11 +6,9 @@ export const AfterGame = (props: { context: any; username: any; gameState: any})
 
     const { context, username, gameState } = props
 
-    const {  feedback, messages, scenario, villainProfile } = gameState
+    const {  feedback, messages, scenario, villainProfile, verdict } = gameState
 
     const tabs = ["Scenario", "Villain Profile", "Messages", "Verdict"]
-
-
 
     const [expandedSection, setExpandedSection] = useState(0)
 
@@ -57,7 +55,7 @@ export const AfterGame = (props: { context: any; username: any; gameState: any})
                     <MessageComponent context={context} messages={messages} username={username} villainName={villainProfile.name} />
                 )
             case 3:
-                return (<FeedbackComponent context={context} feedback={feedback} />)
+                return (<FeedbackComponent context={context} feedback={feedback} verdict={verdict} />)
             default:
                 return (<text color='#D3D3D3'>Something Went wrong</text>)
         }
@@ -68,16 +66,20 @@ export const AfterGame = (props: { context: any; username: any; gameState: any})
         <vstack
             maxWidth={800}
             width={"100%"}
+            height={"100%"}
             padding="medium"
             cornerRadius="medium"
+            backgroundColor="rgba(0,0,0, 0.7)"
+            border="thin"
+            borderColor="rgba(255,255,255,0.7)"
         >
             <hstack padding="large" alignment='middle center' >
-                <icon color='#D3D3D3' grow name='left' size='small' onPress={() => toggleLeft()} />
-                <text color='#D3D3D3' size="xlarge" weight="bold">{tabs[expandedSection]}</text>
+                <icon color='#D3D3D3' grow name='left' size='large' onPress={() => toggleLeft()} />
+                <text color='#D3D3D3' size="xxlarge" weight="bold">{tabs[expandedSection]}</text>
                 <vstack grow alignment='end' onPress={() => toggleRight()}>
                     <icon
                         name={'right'}
-                        size="small"
+                        size="large"
                         color='#D3D3D3'
                     />
                 </vstack>

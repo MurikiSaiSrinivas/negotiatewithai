@@ -253,3 +253,62 @@ export const storyConfig = {
         ]
     },
 };
+
+export const themes = [
+    // General Negotiation & Conflict Themes
+    "Betrayal", "Revenge", "Survival", "Escape", "Ransom", "Espionage", "Hostage", "Heist", "Treason", "Cybercrime",
+    "Corruption", "Bribery", "Deception", "Extortion", "Sabotage", "Terrorism", "Blackmail", "Smuggling", "Conspiracy", "Rebellion",
+    "War", "Truce", "Duel", "Hunt", "Power", "Control", "Trust", "Loyalty", "Diplomacy", "Intrigue",
+    "Influence", "Coercion", "Manipulation", "Secrets", "Forgery", "Hacker", "Underworld", "Surveillance", "Prison", "Spy",
+    "Gang", "Mafia", "Crime", "Trial", "Threat", "Hostility", "Persuasion", "Trade", "Infiltration", "Compromise",
+    "Sacrifice", "Dealmaking", "Conviction", "Smokescreen", "Decoy", "Bluffing", "Ultimatum", "Hacktivism", "Powerplay", "Coverup",
+    "Oppression", "Alliance", "Insider", "Vendetta", "Retaliation", "Secrecy", "Ambush", "Impersonation", "Disinformation", "Exile",
+    "Darknet", "Crypto", "Bounty", "Tradeoff", "Security", "Conflict", "Monopoly", "Exploitation", "Dictatorship", "Espionage",
+
+    // Famous Movie-Inspired Themes
+    "Godfather movie", "Joker movie", "Inception movie", "Interstellar movie", "Matrix movie", "Gladiator movie", "Titanic movie", "Batman movie", "Avengers movie", "Dune movie",
+    "Scarface movie", "Sherlock movie", "Fight Club movie", "John Wick movie", "Star Wars movie", "Mad Max movie", "Blade Runner movie", "Casino movie", "V for Vendetta movie", "No Country movie",
+    "Dark Knight movie", "Shutter Island movie", "The Departed movie", "Goodfellas movie", "Heat movie", "The Prestige movie", "Gone Girl movie", "Looper movie", "Pulp Fiction movie", "Kill Bill movie",
+    "Django movie", "Whiplash movie", "Parasite movie", "Se7en movie", "Zodiac movie", "Oldboy movie", "Ex Machina movie", "Truman Show movie", "Snowpiercer movie", "Drive movie",
+    "The Hateful Eight movie", "Sicario movie", "The Big Short movie", "Ford v Ferrari movie", "Knives Out movie", "Nightcrawler movie", "The Social Network movie", "Prisoners movie", "Arrival movie", "Tenet movie",
+    "The Wolf of Wall Street movie", "Argo movie", "The Martian movie", "Nope movie", "Memento movie", "The Revenant movie", "The Usual Suspects movie", "Jaws movie", "The Shining movie", "It movie",
+
+    // Mythology & Folklore Themes
+    "Olympus", "Zeus", "Hades", "Valkyrie", "Odin", "Thor", "Loki", "Pandora", "Medusa", "Kraken",
+    "Phantom", "Minotaur", "Phoenix", "Griffin", "Sphinx", "Merlin", "Avalon", "Camelot", "Excalibur", "Beowulf",
+    "Fenrir", "Jormungandr", "Ragnarok", "Golem", "Chimera", "Basilisk", "Anubis", "Osiris", "Ra", "Horus",
+
+    // Science Fiction & Futuristic Themes
+    "Cyberpunk", "Dystopia", "Utopia", "Android", "Artificial", "Quantum", "Singularity", "Bioweapon", "Technocracy", "Nanotech",
+    "Megacorp", "Outbreak", "Virtual", "Simulated", "Neuralink", "Teleportation", "Exodus", "Terraform", "Extraterrestrial", "Apocalypse",
+    "AI Rebellion", "Cyber Warfare", "Data Breach", "Drone", "Mecha", "Hivemind", "Galactic", "Cloning", "Mutation", "Time Loop",
+
+    // Fantasy & Magic Themes
+    "Sorcery", "Wizardry", "Alchemy", "Runes", "Dragon", "Spellbook", "Witchcraft", "Elemental", "Shapeshifter", "Portal",
+    "Necromancer", "Summoning", "Dark Arts", "Arcane", "Cursed", "Charmed", "Eldritch", "Mythical", "Forbidden", "Prophecy",
+
+    // Horror & Thriller Themes
+    "Possession", "Haunted", "Exorcism", "Paranormal", "Voodoo", "Cult", "Occult", "Cursed", "Demon", "Specter",
+    "Poltergeist", "Slasher", "Psycho", "Nightmare", "Asylum", "Insanity", "Bloodlust", "Evil", "Supernatural", "Ghoul",
+
+    // Post-Apocalyptic & Survival Themes
+    "Wasteland", "Famine", "Drought", "Anarchy", "Survivor", "Fallout", "Endgame", "Resilience", "Rebuild", "Collapse",
+    "Blackout", "Doomsday", "Outcast", "Nomad", "Virus", "Mutation", "Quarantine", "Zombies", "Last Stand", "Rogue",
+
+    // Historical & Political Themes
+    "Empire", "Revolution", "Crusade", "Colonization", "Feudal", "Monarchy", "Dictator", "Coup", "Aristocracy", "Sovereignty",
+    "Diplomat", "Emissary", "Insurgency", "Totalitarian", "Propaganda", "Reformation", "Guerilla", "Repression", "Ceasefire", "Border",
+
+    // Space & Cosmic Themes
+    "Starlight", "Nebula", "Supernova", "Blackhole", "Meteor", "Constellation", "Lunar", "Solar", "Eclipse", "Asteroid",
+    "Cosmos", "Galaxies", "Starseeker", "Astronaut", "Extraterrestrial", "Alien", "Event Horizon", "Graviton", "Warp Drive", "Singularity",
+
+    // Business & Finance Themes
+    "Stock Market", "Monopoly", "Inflation", "Investment", "Wall Street", "Bankruptcy", "CEO", "Merger", "Acquisition", "Scam",
+    "Hustle", "Startup", "Fintech", "Crypto", "Blockchain", "NFT", "Venture", "Ponzi", "Insider Trading", "Trust Fund",
+
+    // Miscellaneous & Abstract Themes
+    "Illusion", "Paradox", "Simulation", "Fate", "Destiny", "Morality", "Karma", "Euphoria", "Delusion", "Hallucination",
+    "Tranquility", "Existence", "Serendipity", "Whisper", "Echo", "Ethereal", "Twilight", "Flicker", "Epiphany", "Revelation", "Random"
+];
+

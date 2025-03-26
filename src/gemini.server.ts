@@ -1,5 +1,5 @@
 // src/gemini-service.ts
-import { storyConfig, modelSetup, villainConfig, finalVerdictConfig } from "./story-model.js";
+import { storyConfig, modelSetup, villainConfig, finalVerdictConfig, themes } from "./story-model.js";
 
 export async function getStory(apiKey: string) {
     try {
@@ -10,7 +10,7 @@ export async function getStory(apiKey: string) {
         const requestBody = {
             contents: [
                 {
-                    parts: [{ text: "Create a new Story" }],
+                    parts: [{ text: `Create a new Story, based on ${themes[Math.floor(Math.random() * themes.length)]} theme` }],
                 },
             ],
             systemInstruction: {

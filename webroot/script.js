@@ -101,8 +101,7 @@ function openFeedbackModal(verdict, feedback) {
           <div id="modal-feedback-text"></div>
         </div>
         <div class="modal-footer">
-          <button id="restart-game-btn" class="secondary-btn">New Negotiation</button>
-          <button id="share-result-btn" class="primary-btn">Share on Reddit</button>
+          You reached the end of the conversation. You can close this window!!
         </div>
       </div>
     `;
@@ -114,29 +113,6 @@ function openFeedbackModal(verdict, feedback) {
       modal.style.display = 'none';
     });
 
-    modal.querySelector('#restart-game-btn').addEventListener('click', () => {
-      modal.style.display = 'none';
-      devvit.postMessage({ type: 'startGame' });
-    });
-
-    modal.querySelector('#share-result-btn').addEventListener('click', () => {
-      modal.style.display = 'none';
-      // Prepare conversation history for sharing
-      const negotiationHistory = {
-        scenario: gameState.scenario,
-        villainProfile: gameState.villainProfile,
-        messages: [gameState.firstMessage, ...gameState.messages],
-        verdict: verdict,
-        feedback: feedback
-      };
-
-      devvit.postMessage({
-        type: 'shareResults',
-        data: {
-          negotiationHistory: negotiationHistory
-        }
-      });
-    });
 
     // Close modal when clicking outside of it
     window.addEventListener('click', (event) => {

@@ -5,7 +5,7 @@ export const BeforeGame = (props: { username: string, mount: any }): JSX.Element
 
     return (
         <vstack
-            padding="large"
+            padding="medium"
             cornerRadius="large"
             gap="medium"
             alignment="center middle"
