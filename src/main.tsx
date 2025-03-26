@@ -114,17 +114,15 @@ Devvit.addCustomPostType({
 
           case 'webViewReady':
             webView.postMessage({ type: 'initialData', data: { username } });
-            // const story = await getStory(apiKey as string)
-            // await initGameState(story.response.scenario, story.response.villainProfile);
-            await initGameState(fakeStory.scenario, fakeStory.villainProfile)
+            const story = await getStory(apiKey as string)
+            await initGameState(story.response.scenario, story.response.villainProfile);
             webView.postMessage({
               type: 'gameStart', 
-              data: fakeStory
-              // data: {
-              //   scenario: story.response.scenario,
-              //   villainProfile: story.response.villainProfile,
-              //   firstMessage: story.response.villainFirstMessage
-              // },
+              data: {
+                scenario: story.response.scenario,
+                villainProfile: story.response.villainProfile,
+                firstMessage: story.response.villainFirstMessage
+              },
             });
             break;
 
