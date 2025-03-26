@@ -70,7 +70,7 @@ function showFeedbackButton() {
 
   // Replace with feedback button
   inputContainer.innerHTML = `
-    <button id="view-feedback-btn" class="primary-btn">
+    <button id="view-feedback-btn" class="secondary-btn">
       <i class="fas fa-comment-dots"></i> View Feedback
     </button>
   `;

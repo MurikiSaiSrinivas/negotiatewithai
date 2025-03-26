@@ -7,6 +7,7 @@ import { getStory, getVillianMessage } from './gemini.server.js';
 import { AfterGame } from './AfterGame.js';
 import { BeforeGame } from './BeforeGame.js';
 import { emojis, failureSvg, nameBackSvg, successSvg } from './negotiation.js';
+import { fakeStory } from './story-model.js';
 
 Devvit.configure({
   http: true,
@@ -17,16 +18,10 @@ Devvit.configure({
 // Add settings for Gemini API key
 Devvit.addSettings([
   {
-    // Name of the setting which is used to retrieve the setting value
     name: 'gemini-api-key',
-    // This label is used to provide more information in the CLI
     label: 'Gemini AI API key',
-    // Type of the setting value
     type: 'string',
-    // Marks a setting as sensitive info - all secrets are encrypted
     isSecret: true,
-    // Defines the access scope
-    // app-scope ensures only developers can create/replace secrets via CLI
     scope: 'app',
   },
 ]);
@@ -39,10 +34,6 @@ Devvit.addCustomPostType({
   render: (context) => {
 
     // Fetch user data and API key
-
-    // let username = await context.reddit.getCurrentUsername() || 'anon';
-    // let apiKey = await context.settings.get("gemini-api-key") || 'anon';
-
     const [username] = useState(async () => {
       return (await context.reddit.getCurrentUsername()) ?? 'anon';
     });
@@ -123,14 +114,17 @@ Devvit.addCustomPostType({
 
           case 'webViewReady':
             webView.postMessage({ type: 'initialData', data: { username } });
-            const story = await getStory(apiKey as string)
-            await initGameState(story.response.scenario, story.response.villainProfile);
+            // const story = await getStory(apiKey as string)
+            // await initGameState(story.response.scenario, story.response.villainProfile);
+            await initGameState(fakeStory.scenario, fakeStory.villainProfile)
             webView.postMessage({
-              type: 'gameStart', data: {
-                scenario: story.response.scenario,
-                villainProfile: story.response.villainProfile,
-                firstMessage: story.response.villainFirstMessage
-              },
+              type: 'gameStart', 
+              data: fakeStory
+              // data: {
+              //   scenario: story.response.scenario,
+              //   villainProfile: story.response.villainProfile,
+              //   firstMessage: story.response.villainFirstMessage
+              // },
             });
             break;
 

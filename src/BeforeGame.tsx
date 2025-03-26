@@ -41,6 +41,18 @@ export const BeforeGame = (props: { username: string, mount: any }): JSX.Element
                     Face a unique AI villain in a high-stakes negotiation with just 5 messages to succeed
                 </text>
 
+                <vstack gap="small" alignment="center middle" width="100%">
+                    <text color="#CCCCCC">Welcome, User {username}</text>
+
+                    <button
+                        // appearance=""
+                        size="large"
+                        onPress={mount}
+                    >
+                        BEGIN NEGOTIATION
+                    </button>
+                </vstack>
+
                 <vstack gap="small" padding="small">
                     <hstack gap="small">
                         <text color="#FF5700">•</text>
@@ -63,18 +75,6 @@ export const BeforeGame = (props: { username: string, mount: any }): JSX.Element
                         < text wrap color="#CCCCCC">Share your results with the Reddit community</text>
                     </hstack>
                 </vstack>
-            </vstack>
-
-            <vstack gap="small" alignment="center middle" width="100%">
-                <text color="#CCCCCC">Welcome, User {username}</text>
-
-                <button
-                    // appearance=""
-                    size="large"
-                    onPress={mount}
-                >
-                    BEGIN NEGOTIATION
-                </button>
             </vstack>
         </vstack>
     );
