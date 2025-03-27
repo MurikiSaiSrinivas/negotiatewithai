@@ -32,7 +32,7 @@ Devvit.addCustomPostType({
   height: 'tall',
   render: (context) => {
     // Fetch user data and API key
-    const [username] = useState(async () => {
+    const [username, setUsername] = useState(async () => {
       return (await context.reddit.getCurrentUsername()) ?? 'anon';
     });
 
@@ -53,6 +53,7 @@ Devvit.addCustomPostType({
       const stateMessages = await context.redis.get(messagesKey);
       if (stateString && stateMessages) {
         const data = JSON.parse(stateString)
+        data.final && setUsername(data.username || "Anon")
         return {
           val: data.final,
           gameState: { ...data, messages: JSON.parse(stateMessages) },
@@ -115,7 +116,7 @@ Devvit.addCustomPostType({
             const story = await getStory(apiKey as string)
             await initGameState(story.response.scenario, story.response.villainProfile);
             webView.postMessage({
-              type: 'gameStart', 
+              type: 'gameStart',
               data: {
                 scenario: story.response.scenario,
                 villainProfile: story.response.villainProfile,

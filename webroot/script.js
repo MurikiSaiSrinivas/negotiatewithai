@@ -29,6 +29,8 @@ const villainProfileInfo = document.createElement('div'); // Will be used in the
 const chatHeader = document.querySelector('.chat-header');
 const scenarioBox = document.querySelector('.scenario-box');
 const dropdownIndicator = document.querySelector('.dropdown-indicator')
+const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
 
 // Set initial message counter
 messageCounter.textContent = `${MSG_LIMIT - gameState.messageCount} messages remaining`;
@@ -51,11 +53,11 @@ const dropdownOpenClose = () => {
   if (isExpanded) {
     scenarioBox.style.maxHeight = scenarioBox.scrollHeight + 'px';
     scenarioBox.style.opacity = '1';
-    dropdownIndicator.innerHTML = '<img src="./assets/c-down.png" alt="drop down close">';
+    dropdownIndicator.innerHTML = `<img src="./assets/${isDarkMode? 'c-down-neg.png' :'c-down.png'}" alt="drop down close">`;
   } else {
     scenarioBox.style.maxHeight = '0';
     scenarioBox.style.opacity = '0';
-    dropdownIndicator.innerHTML = '<img src="./assets/c-up.png" alt="drop down close">';
+    dropdownIndicator.innerHTML = `<img src="./assets/${isDarkMode? 'c-up-neg.png' :'c-up.png'}" alt="drop down close">`;
   }
 }
 
