@@ -8,7 +8,7 @@ export const AfterGame = (props: { context: any; username: any; gameState: any})
 
     const {  feedback, messages, scenario, villainProfile, verdict } = gameState
 
-    const tabs = ["Scenario", "Villain Profile", "Messages", "Verdict"]
+    const tabs = ["Scenario", "Villain Profile", "Messages", "Feedback"]
 
     const [expandedSection, setExpandedSection] = useState(0)
 
