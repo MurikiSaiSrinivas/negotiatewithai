@@ -290,7 +290,10 @@ function showLoadingModal() {
  * 🔮 Fetch Initial Story from Gemini
  */
 async function fetchInitialStory() {
-  const theme = themes[Math.floor(Math.random() * themes.length)];
+  const pickMovieTheme = Math.random() < 0.6; // 60% chance (≈ 3/5)
+  const theme = pickMovieTheme
+    ? movieThemes[Math.floor(Math.random() * movieThemes.length)]
+    : themes[Math.floor(Math.random() * themes.length)];
 
   const requestBody = {
     contents: [{ role: "user", parts: [{ text: `Create a new story based on the theme: ${theme}` }] }],
@@ -401,11 +404,29 @@ async function startGame() {
     if (isExpanded) toggleDropdown();
     hideTypingIndicator();
     addMessage(gameState.firstMessage, 'villain');
-  }, 3000);
+  }, 10000);
 }
 
 
-const storySystemInstruction = "You are an AI game master for a text-based negotiation game. Your task is to generate a unique and immersive negotiation scenario where the player must convince a villain to agree to a deal.\n\nFollow this structured format for your response:\n\n1. **Scenario Background**: Provide a short but engaging description of the setting and conflict.\n\n2. **Villain Profile**:\n\n   - **Name**: A fitting name for the villain.\n\n   - **Role**: Who they are in the world (e.g., crime lord, hacker, CEO).\n\n   - **Personality**: Describe their attitude (e.g., manipulative, aggressive, greedy, desperate).\n\n   - **Motivation**: What does the villain want? Why are they resisting the deal?\n\n3. **Villain’s First Message**: A short but impactful opening line to start the negotiation.\n\n**Guidelines:**\n\n- Keep the responses concise and immersive.\n\n- The villain should **not be too easy to persuade**.\n\n- The conflict should feel **high stakes but realistic**.";
+const storySystemInstruction = `
+You are an AI game master for a text-based negotiation game. Your task is to generate a unique and immersive negotiation scenario where the player must convince a villain to agree to a deal.
+
+Follow this structured format for your response:
+
+1. **Scenario Background**: Provide a short, vivid description of the setting and conflict. Keep it under 3 sentences or 80 words.
+
+2. **Villain Profile**:
+   - **Name**: A fitting name for the villain.
+   - **Role**: Who they are in the world (e.g., crime lord, hacker, CEO).
+   - **Personality**: Describe their personality in **one sentence**.
+     - 🎬 If the theme is based on a movie, reflect the actual personality of the referenced character.
+     - Otherwise, use a unique, believable personality.
+   - **Motivation**: In **one clear sentence**, explain what drives the villain and why they resist negotiation.
+     - 🎬 If it’s a movie theme, make sure this aligns with the character’s movie motivation.
+     - For original themes, create your own realistic motivation.
+
+3. **Villain’s First Message**: A short but impactful line to start the negotiation.
+`;
 const villainSystemInstruction = `
 You are playing the role of a villain in a negotiation game. Your goal is to challenge the player's negotiation skills while staying in character.
 
@@ -465,6 +486,15 @@ Respond with one of the following JSON formats:
 }
 `;
 
+const movieThemes = [
+  // Famous Movie-Inspired Themes
+  "Godfather movie", "Joker movie", "Inception movie", "Interstellar movie", "Matrix movie", "Gladiator movie", "Titanic movie", "Batman movie", "Avengers movie", "Dune movie",
+  "Scarface movie", "Sherlock movie", "Fight Club movie", "John Wick movie", "Star Wars movie", "Mad Max movie", "Blade Runner movie", "Casino movie", "V for Vendetta movie", "No Country movie",
+  "Dark Knight movie", "Shutter Island movie", "The Departed movie", "Goodfellas movie", "Heat movie", "The Prestige movie", "Gone Girl movie", "Looper movie", "Pulp Fiction movie", "Kill Bill movie",
+  "Django movie", "Whiplash movie", "Parasite movie", "Se7en movie", "Zodiac movie", "Oldboy movie", "Ex Machina movie", "Truman Show movie", "Snowpiercer movie", "Drive movie",
+  "The Hateful Eight movie", "Sicario movie", "The Big Short movie", "Ford v Ferrari movie", "Knives Out movie", "Nightcrawler movie", "The Social Network movie", "Prisoners movie", "Arrival movie", "Tenet movie",
+  "The Wolf of Wall Street movie", "Argo movie", "The Martian movie", "Nope movie", "Memento movie", "The Revenant movie", "The Usual Suspects movie", "Jaws movie", "The Shining movie", "It movie",
+]
 
 const themes = [
   // General Negotiation & Conflict Themes
@@ -476,14 +506,6 @@ const themes = [
   "Sacrifice", "Dealmaking", "Conviction", "Smokescreen", "Decoy", "Bluffing", "Ultimatum", "Hacktivism", "Powerplay", "Coverup",
   "Oppression", "Alliance", "Insider", "Vendetta", "Retaliation", "Secrecy", "Ambush", "Impersonation", "Disinformation", "Exile",
   "Darknet", "Crypto", "Bounty", "Tradeoff", "Security", "Conflict", "Monopoly", "Exploitation", "Dictatorship", "Espionage",
-
-  // Famous Movie-Inspired Themes
-  "Godfather movie", "Joker movie", "Inception movie", "Interstellar movie", "Matrix movie", "Gladiator movie", "Titanic movie", "Batman movie", "Avengers movie", "Dune movie",
-  "Scarface movie", "Sherlock movie", "Fight Club movie", "John Wick movie", "Star Wars movie", "Mad Max movie", "Blade Runner movie", "Casino movie", "V for Vendetta movie", "No Country movie",
-  "Dark Knight movie", "Shutter Island movie", "The Departed movie", "Goodfellas movie", "Heat movie", "The Prestige movie", "Gone Girl movie", "Looper movie", "Pulp Fiction movie", "Kill Bill movie",
-  "Django movie", "Whiplash movie", "Parasite movie", "Se7en movie", "Zodiac movie", "Oldboy movie", "Ex Machina movie", "Truman Show movie", "Snowpiercer movie", "Drive movie",
-  "The Hateful Eight movie", "Sicario movie", "The Big Short movie", "Ford v Ferrari movie", "Knives Out movie", "Nightcrawler movie", "The Social Network movie", "Prisoners movie", "Arrival movie", "Tenet movie",
-  "The Wolf of Wall Street movie", "Argo movie", "The Martian movie", "Nope movie", "Memento movie", "The Revenant movie", "The Usual Suspects movie", "Jaws movie", "The Shining movie", "It movie",
 
   // Mythology & Folklore Themes
   "Olympus", "Zeus", "Hades", "Valkyrie", "Odin", "Thor", "Loki", "Pandora", "Medusa", "Kraken",

@@ -40,7 +40,7 @@
   <div class="container">
     <!-- Welcome Screen -->
     <div id="welcome-screen" class="screen">
-      <h1><img src="./assets/n-Icon.png" width="30px"/> Negotiate With AI</h1>
+      <h1><img src="./assets/n-Icon.png" width="30px" /> Negotiate With AI</h1>
       <p>Step into the role of a skilled negotiator. Convince a villain, navigate tension, and make every word count.
       </p>
       <ui class="game-info">
@@ -57,15 +57,17 @@
     <!-- Game Screen -->
     <div id="game-screen" class="screen hidden">
       <div class="chat-header">
-        <div class="villain-info">
-          <div id="villain-name" class="villain-name">Evil Mastermind</div>
-          <div id="message-counter">5 messages remaining</div>
+        <div class="only-chat-flex">
+          <div class="villain-info">
+            <div id="villain-name" class="villain-name">Evil Mastermind</div>
+            <div id="message-counter">5 messages remaining</div>
+          </div>
+          <div class="dropdown-indicator">
+            <img src="./assets/c-up.png" alt="drop down close">
+          </div>
         </div>
-        <div class="dropdown-indicator">
-          <img src="./assets/c-up.png" alt="drop down close">
-        </div>
+        <i class="scenario-hint" id="scenario-hint">💡 Click here to view the scenario again</i>
       </div>
-
       <div class="scenario-box">
         <div class="scenario-container">
           <h3>Scenario:</h3>

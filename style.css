@@ -37,7 +37,7 @@ body {
   width: 100vw;
 }
 
-#welcome-screen{
+#welcome-screen {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -186,11 +186,29 @@ h1 {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 15px;
   margin-bottom: 15px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.only-chat-flex {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
 }
+
+.scenario-hint {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #888;
+  margin: 4px 0 10px;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+.scenario-hint.fade-out {
+  opacity: 0;
+}
+
 
 .villain-avatar {
   width: 40px;
