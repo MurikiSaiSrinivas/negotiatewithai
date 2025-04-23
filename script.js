@@ -1,15 +1,8 @@
 // script.js
-
-//Mock values
-const mockInitData = {
-  "scenario": "The year is 2342.  Following a devastating solar flare, Earth's magnetic field has weakened, causing widespread technological failures and societal collapse.  Small, isolated communities struggle to survive.  You are a representative of one such community, desperately seeking a rare mineral, 'Solarium', found only in the treacherous Exile Zone, a region irradiated and controlled by a ruthless warlord.  Securing Solarium is essential for repairing your community's vital energy grid.",
-  "villainFirstMessage": "You dare trespass on my land?  Your pathetic pleas for Solarium will earn you only a swift and painful end.  Unless...",
-  "villainProfile": { "motivation": "The warlord, Malkor, hoards Solarium, believing it gives him power and control over the remaining survivors. He's fiercely protective of his territory and sees any approach as a threat to his dominance.  He is only interested in deals that maximize his power and resources.", "name": "Malkor", "personality": "Ruthless, paranoid, and power-hungry. Malkor is prone to fits of rage but also displays cunning and strategic thinking.", "role": "Warlord of the Exile Zone" }
-}
 /**
  * 🔧 Configuration & Constants
  */
-const GEMINI_API_KEY = "Gemini"; // 🔐 Beta only
+const GEMINI_API_KEY = atob("QUl6YVN5QmUzRFJlSFJ3Vi1qa0FQX0w2T1JENFV5UEFfTnJSSzhJ"); // 🔐 Beta only
 const GEMINI_MODEL = "gemini-1.5-flash";
 const GEMINI_BASE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -168,21 +161,64 @@ function clearGameState() {
   localStorage.removeItem('gameState');
 }
 
-// Check if name already exists
+function restoreConversationFromState() {
+  scenarioText.textContent = gameState.scenario;
+  villainNameElement.textContent = gameState.villainProfile.name;
+
+  villainProfileInfo.innerHTML = '';
+  villainProfileInfo.className = 'villain-profile-info';
+  Object.entries(gameState.villainProfile).forEach(([key, value]) => {
+    if (key !== 'name') {
+      const p = document.createElement('p');
+      p.innerHTML = `<b>${key.charAt(0).toUpperCase() + key.slice(1)}:</b> ${value}`;
+      villainProfileInfo.appendChild(p);
+    }
+  });
+
+  const existing = scenarioBox.querySelector('.villain-profile-info');
+  if (existing) scenarioBox.removeChild(existing);
+  scenarioBox.appendChild(villainProfileInfo);
+
+  messagesBox.innerHTML = '';
+  gameState.messages.forEach((msg) => {
+    const role = msg.role === 'model' ? 'villain' : 'player';
+    msg.parts.forEach(part => addMessage(part.text, role));
+  });
+
+  messageCounter.textContent = `${MSG_LIMIT - gameState.messageCount} messages remaining`;
+  if (gameState.gameOver) {
+    showFeedbackButton();
+    playerMessageInput.disabled = true;
+    sendMessageBtn.disabled = true;
+  } else {
+    playerMessageInput.disabled = false;
+    updateSendButtonState();
+  }
+}
+
+// Restore session if ongoing
 window.addEventListener('DOMContentLoaded', () => {
   const savedName = localStorage.getItem('negotiatorName');
-  console.log("welcome", usernameWelcome)
+  const inProgress = localStorage.getItem('ongoingNegotiation') === 'true';
+
   if (savedName) {
     gameState.userName = savedName;
-    usernameInput.classList.add('hidden')
-    usernameWelcome.innerHTML=`<br/> Hello ${savedName}, Are you ready for next negotiation.`
-    // welcomeScreen.classList.add('hidden');
-    // gameScreen.classList.remove('hidden');
-    // startGame();
+    usernameInput.classList.add('hidden');
+    usernameWelcome.innerHTML = `<br/> Hello ${savedName}, Are you ready for next negotiation.`;
+
+    if (inProgress) {
+      const stored = loadGameState();
+      if (stored) {
+        Object.assign(gameState, stored);
+        welcomeScreen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        restoreConversationFromState();
+      }
+    }
   }
 });
 
-startBtn.addEventListener('click', () => {
+const startBtnHandle = () => {
   const name = localStorage.getItem('negotiatorName') || usernameInput.value.trim();
   console.log(name)
   if (name) {
@@ -195,7 +231,10 @@ startBtn.addEventListener('click', () => {
   } else {
     alert("Please enter your name to begin.");
   }
-});
+}
+
+
+startBtn.addEventListener('click', startBtnHandle);
 
 
 // Set initial message counter
@@ -252,9 +291,6 @@ function showLoadingModal() {
  */
 async function fetchInitialStory() {
   const theme = themes[Math.floor(Math.random() * themes.length)];
-
-  //Just return mock data
-  return mockInitData;
 
   const requestBody = {
     contents: [{ role: "user", parts: [{ text: `Create a new story based on the theme: ${theme}` }] }],
@@ -367,27 +403,6 @@ async function startGame() {
     addMessage(gameState.firstMessage, 'villain');
   }, 3000);
 }
-
-// ⏩ Continue with other logic (sendPlayerMessage, addMessage, etc.)...
-
-// const loadingModal = document.createElement('div');
-// loadingModal.id = 'loading-modal';
-// loadingModal.className = 'modal';
-
-// // Modal content
-// loadingModal.innerHTML = `
-//       <div class="modal-content loading-content">
-//         <h3>Loading....</h3>
-//         <p>Hello Negotiater, We are connecting with your villain. Please Hold on!!</p>
-//         <br/>
-//         <p>Details about the villain can be seen by click on the chat header i.e., on villain name</p>
-//       </div>
-//     `;
-
-// document.body.appendChild(loadingModal);
-
-// // Show the modal
-// loadingModal.style.display = 'block';
 
 
 const storySystemInstruction = "You are an AI game master for a text-based negotiation game. Your task is to generate a unique and immersive negotiation scenario where the player must convince a villain to agree to a deal.\n\nFollow this structured format for your response:\n\n1. **Scenario Background**: Provide a short but engaging description of the setting and conflict.\n\n2. **Villain Profile**:\n\n   - **Name**: A fitting name for the villain.\n\n   - **Role**: Who they are in the world (e.g., crime lord, hacker, CEO).\n\n   - **Personality**: Describe their attitude (e.g., manipulative, aggressive, greedy, desperate).\n\n   - **Motivation**: What does the villain want? Why are they resisting the deal?\n\n3. **Villain’s First Message**: A short but impactful opening line to start the negotiation.\n\n**Guidelines:**\n\n- Keep the responses concise and immersive.\n\n- The villain should **not be too easy to persuade**.\n\n- The conflict should feel **high stakes but realistic**.";
@@ -509,24 +524,45 @@ const themes = [
   "Tranquility", "Existence", "Serendipity", "Whisper", "Echo", "Ethereal", "Twilight", "Flicker", "Epiphany", "Revelation", "Random"
 ]
 
-
-// Function to replace input container with feedback button
-function showFeedbackButton() {
-  const inputContainer = document.querySelector('.input-container');
-
-  // Save original content to restore later if needed
-  inputContainer.dataset.originalContent = inputContainer.innerHTML;
-
-  // Replace with feedback button
-  inputContainer.innerHTML = `
-    <button id="view-feedback-btn" class="secondary-btn">
-      <i class="fas fa-comment-dots"></i> View Feedback
-    </button>
-  `;
-
-  // Add event listener to the new button
-  document.getElementById('view-feedback-btn').addEventListener('click', openFeedbackModal);
+function removeFeedbackButton() {
+  const feedbackBtn = document.getElementById('view-feedback-btn');
+  const inputRow = document.querySelector('.message-input-row');
+  const charCounter = document.querySelector('.char-counter');
+  const stamp = document.querySelector('.stamp-div');
+  if (feedbackBtn && inputRow && charCounter) {
+    feedbackBtn.classList.add('hidden');
+    inputRow.classList.remove('hidden');
+    charCounter.classList.remove('hidden');
+  }
+  if (stamp) {
+    stamp.remove();
+  }
+  // Reset input state
+  playerMessageInput.disabled = false;
+  playerMessageInput.value = '';
+  charCount.textContent = '0';
+  updateSendButtonState();
 }
+
+
+function showFeedbackButton() {
+  const feedbackBtn = document.getElementById('view-feedback-btn');
+  const inputRow = document.querySelector('.message-input-row');
+  const charCounter = document.querySelector('.char-counter');
+
+  if (feedbackBtn && inputRow && charCounter) {
+    feedbackBtn.classList.remove('hidden');
+    inputRow.classList.add('hidden');
+    charCounter.classList.add('hidden');
+  }
+}
+
+
+
+// Add event listener to the feedback button
+document.getElementById('view-feedback-btn').addEventListener('click', openFeedbackModal);
+
+// openFeedbackModal()
 
 // Function to create and open feedback modal
 function openFeedbackModal(verdict, feedback) {
@@ -550,7 +586,8 @@ function openFeedbackModal(verdict, feedback) {
           <div id="modal-feedback-text"></div>
         </div>
         <div class="modal-footer">
-          You reached the end of the conversation. You can close this window!!
+          <button id="restart-game" class="secondary-btn">Play Again (Same Story)</button>
+          <button id="new-game" class="primary-btn">Begin New Story</button>
         </div>
       </div>
     `;
@@ -614,6 +651,33 @@ function openFeedbackModal(verdict, feedback) {
     modalFeedbackText.appendChild(container);
   });
 
+  document.getElementById('restart-game').addEventListener('click', () => {
+    modal.style.display = 'none';
+
+    // Reset state
+    gameState.messages = [];
+    gameState.messageCount = 0;
+    gameState.gameOver = false;
+    gameState.verdict = "";
+    gameState.feedback = [];
+
+    // Reset UI
+    messagesBox.innerHTML = '';
+    messageCounter.textContent = `${MSG_LIMIT} messages remaining`;
+    removeFeedbackButton();
+
+    // Re-add first villain message
+    addMessage(gameState.firstMessage, 'villain');
+    saveGameState();
+  });
+
+
+  document.getElementById('new-game').addEventListener('click', () => {
+    modal.style.display = 'none';
+    clearGameState();
+    window.location.reload();
+  });
+
   // Show the modal
   modal.style.display = 'block';
 }
@@ -660,46 +724,105 @@ function updateSendButtonState() {
 }
 
 // Functions
+// async function sendPlayerMessage() {
+//   const message = playerMessageInput.value.trim();
+
+//   if (!message || playerMessageInput.disabled) {
+//     return;
+//   }
+
+//   // Disable input while waiting for response
+//   playerMessageInput.disabled = true;
+//   sendMessageBtn.disabled = true;
+
+//   // Add message to the conversation
+//   addMessage(message, 'player');
+
+//   // Clear input
+//   playerMessageInput.value = '';
+//   charCount.textContent = '0';
+
+//   // Update message counter
+//   gameState.messageCount++;
+//   messageCounter.textContent = `${MSG_LIMIT - gameState.messageCount} messages remaining`;
+
+
+
+//   // Send to Gemini to get the response
+//   const reply = await fetchVillainReply({
+//     messages: gameState.messages,
+//     scenario: gameState.scenario,
+//     villainProfile: gameState.villainProfile
+//   }, gameState.messageCount === MSG_LIMIT);
+
+//   addMessage(reply.response, 'villain');
+//   addMessage(reply.indicator, 'expression');
+
+//   if (reply.verdict) {
+//     const { winloose, feedback } = reply.verdict
+//     // 🎉 Early finish detected
+//     gameState.gameOver = true;
+//     gameState.verdict = winloose.toLowerCase();
+//     gameState.feedback = feedback || [];
+
+//     const stampDiv = document.createElement('div');
+//     stampDiv.innerHTML = winloose === 'win'
+//       ? "<img src='./assets/Success.png' alt='Won the Negotiation'/>"
+//       : "<img src='./assets/Failure.png' alt='Lost the Negotiation'/>";
+//     stampDiv.className = "stamp-div";
+//     gameScreen.appendChild(stampDiv);
+
+//     showFeedbackButton();
+//     playerMessageInput.disabled = true;
+//     sendMessageBtn.disabled = true;
+//     return;
+//   }
+
+
+//   // If this was the final message, update counter text
+//   if (gameState.messageCount === MSG_LIMIT) {
+//     console.log("I'm in here")
+//     messageCounter.textContent = 'Final message sent';
+//     playerMessageInput.disabled = true;
+//     sendMessageBtn.disabled = true;
+//   }
+
+//   playerMessageInput.disabled = false;
+//   sendMessageBtn.disabled = false;
+
+// }
+
 async function sendPlayerMessage() {
   const message = playerMessageInput.value.trim();
+  if (!message || playerMessageInput.disabled) return;
 
-  if (!message || playerMessageInput.disabled) {
-    return;
-  }
-
-  // Disable input while waiting for response
   playerMessageInput.disabled = true;
   sendMessageBtn.disabled = true;
-
-  // Add message to the conversation
   addMessage(message, 'player');
-
-  // Clear input
   playerMessageInput.value = '';
   charCount.textContent = '0';
 
-  // Update message counter
   gameState.messageCount++;
   messageCounter.textContent = `${MSG_LIMIT - gameState.messageCount} messages remaining`;
+  saveGameState();
 
-
-
-  // Send to Gemini to get the response
   const reply = await fetchVillainReply({
     messages: gameState.messages,
     scenario: gameState.scenario,
     villainProfile: gameState.villainProfile
   }, gameState.messageCount === MSG_LIMIT);
 
+  if (!reply) return; // gracefully skip if null
+
   addMessage(reply.response, 'villain');
   addMessage(reply.indicator, 'expression');
 
   if (reply.verdict) {
-    const { winloose, feedback } = reply.verdict
-    // 🎉 Early finish detected
+    const { winloose, feedback } = reply.verdict;
     gameState.gameOver = true;
     gameState.verdict = winloose.toLowerCase();
     gameState.feedback = feedback || [];
+    clearGameState();
 
     const stampDiv = document.createElement('div');
     stampDiv.innerHTML = winloose === 'win'
@@ -714,19 +837,17 @@ async function sendPlayerMessage() {
     return;
   }
 
-
-  // If this was the final message, update counter text
   if (gameState.messageCount === MSG_LIMIT) {
-    console.log("I'm in here")
     messageCounter.textContent = 'Final message sent';
     playerMessageInput.disabled = true;
     sendMessageBtn.disabled = true;
+  } else {
+    playerMessageInput.disabled = false;
+    sendMessageBtn.disabled = false;
   }
-
-  playerMessageInput.disabled = false;
-  sendMessageBtn.disabled = false;
-
+  saveGameState();
 }
+
 
 // Add a message to the conversation
 function addMessage(text, sender) {
