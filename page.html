@@ -11,14 +11,24 @@
 
 <body>
   <div class="container">
-    <!-- <header>
-      <h1>Negotiate With AI</h1>
-      <p class="subtitle">Test your negotiation skills against an AI villain</p>
-    </header> -->
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="screen">
+      <h1>🎭 Negotiate With AI</h1>
+      <p>Step into the role of a skilled negotiator. Convince a villain, navigate tension, and make every word count.
+      </p>
+      <ui class="game-info">
+        <li>AI generates a unique scenario and villain</li>
+        <li>Send strategic messages (150-200 characters each)</li>
+        <li>AI responds dynamically to your approach</li>
+        <li>Receive verdict and expert feedback</li>
+      </ui>
+      <p class="username-welcome"></p>
+      <input type="text" id="username-input" placeholder="Enter your name" maxlength="25">
+      <button id="start-game-btn" class="primary-btn">Begin Negotiation</button>
+    </div>
 
-    <!-- <div id="game-container"> -->
-    <!-- Game screen -->
-    <div id="game-screen" class="screen">
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen hidden">
       <div class="chat-header">
         <div class="villain-info">
           <div id="villain-name" class="villain-name">Evil Mastermind</div>
@@ -28,7 +38,6 @@
           <img src="./assets/c-up.png" alt="drop down close">
         </div>
       </div>
-
 
       <div class="scenario-box">
         <div class="scenario-container">
@@ -53,9 +62,7 @@
         </div>
       </div>
     </div>
-    <!-- </div> -->
   </div>
-
   <script src="./script.js"></script>
 </body>
 
