@@ -20,7 +20,13 @@ const generateConfig = {
 const storyResponseSchema = {
   type: "object",
   properties: {
-    scenario: {
+    scene: {
+      type: "string"
+    },
+    player: {
+      type: "string"
+    },
+    tip:{
       type: "string"
     },
     villainProfile: {
@@ -29,21 +35,17 @@ const storyResponseSchema = {
         name: {
           type: "string"
         },
-        role: {
+        goal: {
           type: "string"
         },
         personality: {
           type: "string"
         },
-        motivation: {
-          type: "string"
-        }
       },
       required: [
         "name",
-        "role",
-        "personality",
-        "motivation"
+        "goal",
+        "personality"
       ]
     },
     villainFirstMessage: {
@@ -51,7 +53,9 @@ const storyResponseSchema = {
     }
   },
   required: [
-    "scenario",
+    "scene",
+    "player",
+    "tip",
     "villainProfile",
     "villainFirstMessage"
   ]
@@ -106,19 +110,22 @@ const villainResponseSchema = {
     "indicator"
   ],
 }
+
 /**
- * 🧠 Game State
+ * 🧐 Game State
  */
 let gameState = {
-  scenario: '',
-  villainProfile: { name: "", role: "", personality: "", motivation: "" },
+  scene: '',
+  player: '',
+  tip: '',
+  villainProfile: { name: '', goal: '', personality: '' },
   firstMessage: '',
   messages: [],
   messageCount: 0,
   gameOver: false,
-  userName: "",
+  userName: '',
   apiKey: '',
-  verdict: "",
+  verdict: '',
   feedback: []
 };
 
@@ -131,20 +138,21 @@ const playerMessageInput = document.getElementById('player-message');
 const charCount = document.getElementById('char-count');
 const messageCounter = document.getElementById('message-counter');
 const messagesBox = document.getElementById('messages-box');
-const scenarioText = document.getElementById('scenario-text');
 const villainNameElement = document.getElementById('villain-name');
 const villainProfileInfo = document.createElement('div');
 const chatHeader = document.querySelector('.chat-header');
 const scenarioBox = document.querySelector('.scenario-box');
 const dropdownIndicator = document.querySelector('.dropdown-indicator');
-const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 const welcomeScreen = document.getElementById('welcome-screen');
 const startBtn = document.getElementById('start-game-btn');
 const usernameInput = document.getElementById('username-input');
 const usernameWelcome = document.querySelector('.username-welcome');
 
 
-// Store & retrieve game state from localStorage
+/**
+ * 🔒 Local Storage helpers
+ */
 function saveGameState() {
   localStorage.setItem('ongoingNegotiation', 'true');
   localStorage.setItem('gameState', JSON.stringify(gameState));
@@ -161,23 +169,42 @@ function clearGameState() {
   localStorage.removeItem('gameState');
 }
 
-function restoreConversationFromState() {
-  scenarioText.textContent = gameState.scenario;
+
+/**
+ * 🖐️ Common function to update villain profile info
+ */
+function updateVillainProfileUI() {
   villainNameElement.textContent = gameState.villainProfile.name;
 
   villainProfileInfo.innerHTML = '';
   villainProfileInfo.className = 'villain-profile-info';
-  Object.entries(gameState.villainProfile).forEach(([key, value]) => {
-    if (key !== 'name') {
-      const p = document.createElement('p');
-      p.innerHTML = `<b>${key.charAt(0).toUpperCase() + key.slice(1)}:</b> ${value}`;
-      villainProfileInfo.appendChild(p);
-    }
-  });
+
+  const scenePara = document.createElement('p');
+  scenePara.innerHTML = `<b>🧐 Scene :</b> ${gameState.scene}`;
+  villainProfileInfo.appendChild(scenePara);
+
+  const playerPara = document.createElement('p');
+  playerPara.innerHTML = `<b>🧐 Player :</b> ${gameState.player}`;
+  villainProfileInfo.appendChild(playerPara);
+
+  const villianPara = document.createElement('p');
+  villianPara.innerHTML = `<b>😈 Villain :</b> ${gameState.villainProfile.goal}`;
+  villainProfileInfo.appendChild(villianPara);
+
+  const tipPara = document.createElement('p');
+  tipPara.innerHTML = `<b>💡 Tip :</b> ${gameState.tip}`;
+  villainProfileInfo.appendChild(tipPara)
 
   const existing = scenarioBox.querySelector('.villain-profile-info');
   if (existing) scenarioBox.removeChild(existing);
   scenarioBox.appendChild(villainProfileInfo);
+}
+
+/**
+ * 🌍 Restore Game
+ */
+function restoreConversationFromState() {
+  updateVillainProfileUI();
 
   messagesBox.innerHTML = '';
   gameState.messages.forEach((msg) => {
@@ -195,28 +222,6 @@ function restoreConversationFromState() {
     updateSendButtonState();
   }
 }
-
-// Restore session if ongoing
-window.addEventListener('DOMContentLoaded', () => {
-  const savedName = localStorage.getItem('negotiatorName');
-  const inProgress = localStorage.getItem('ongoingNegotiation') === 'true';
-
-  if (savedName) {
-    gameState.userName = savedName;
-    usernameInput.classList.add('hidden');
-    usernameWelcome.innerHTML = `<br/> Hello ${savedName}, Are you ready for next negotiation.`;
-
-    if (inProgress) {
-      const stored = loadGameState();
-      if (stored) {
-        Object.assign(gameState, stored);
-        welcomeScreen.classList.add('hidden');
-        gameScreen.classList.remove('hidden');
-        restoreConversationFromState();
-      }
-    }
-  }
-});
 
 const startBtnHandle = () => {
   const name = localStorage.getItem('negotiatorName') || usernameInput.value.trim();
@@ -287,20 +292,17 @@ function showLoadingModal() {
 
 
 /**
- * 🔮 Fetch Initial Story from Gemini
+ * 🔮 Fetch New Story
  */
 async function fetchInitialStory() {
-  const pickMovieTheme = Math.random() < 0.6; // 60% chance (≈ 3/5)
+  const pickMovieTheme = Math.random() < 0.6;
   const theme = pickMovieTheme
     ? movieThemes[Math.floor(Math.random() * movieThemes.length)]
     : themes[Math.floor(Math.random() * themes.length)];
 
   const requestBody = {
     contents: [{ role: "user", parts: [{ text: `Create a new story based on the theme: ${theme}` }] }],
-    systemInstruction: {
-      role: "user",
-      parts: [{ text: storySystemInstruction }]
-    },
+    systemInstruction: { role: "user", parts: [{ text: storySystemInstruction }] },
     generationConfig: { ...generateConfig, responseSchema: storyResponseSchema }
   };
 
@@ -313,10 +315,9 @@ async function fetchInitialStory() {
     const data = await response.json();
     const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!jsonText) throw new Error("No response content");
-    console.log(jsonText)
     return JSON.parse(jsonText);
   } catch (err) {
-    console.error("❌ Error in fetchInitialStory:", err.message);
+    console.error("Error in fetchInitialStory:", err.message);
     return null;
   }
 }
@@ -326,14 +327,12 @@ async function fetchInitialStory() {
  */
 async function fetchVillainReply(history, isFinal = false) {
 
-  console.log(`This is ${isFinal ? "**the final player message**" : "**an ongoing negotiation**"}`)
-
   const requestBody = {
     contents: history.messages,
     systemInstruction: {
       role: "user",
       parts: [{
-        text: `${villainSystemInstruction}\n\nScenario: ${history.scenario}\nVillainProfile: ${JSON.stringify(history.villainProfile)}\n\nThis is ${isFinal ? "**the final player message**" : "**an ongoing negotiation**"}.`
+        text: `${villainSystemInstruction}\n\nScene: ${history.scene}\nVillainProfile: ${JSON.stringify(history.villainProfile)}\n\nTip:${history.tip}\n\nThis is ${isFinal ? "**the final player message**" : "**an ongoing negotiation**"}.`
       }]
     },
     generationConfig: { ...generateConfig, responseSchema: villainResponseSchema }
@@ -356,102 +355,172 @@ async function fetchVillainReply(history, isFinal = false) {
 }
 
 /**
- * 🎬 Start Game
+ * ➖ Game Start
  */
 async function startGame() {
   const data = await fetchInitialStory();
   if (!data) return alert("Failed to load story");
 
-  console.log("1st message:", data.villainFirstMessage)
-
-  gameState.scenario = data.scenario;
+  gameState.scene = data.scene;
+  gameState.player = data.player;
+  gameState.tip = data.tip
   gameState.villainProfile = data.villainProfile;
   gameState.firstMessage = data.villainFirstMessage;
   gameState.messages = [];
   gameState.messageCount = 0;
   gameState.gameOver = false;
 
-  scenarioText.textContent = gameState.scenario;
-  villainNameElement.textContent = gameState.villainProfile.name;
+  updateVillainProfileUI();
 
-  villainProfileInfo.innerHTML = '';
-  villainProfileInfo.className = 'villain-profile-info';
-  Object.entries(gameState.villainProfile).forEach(([key, value]) => {
-    if (key !== 'name') {
-      const p = document.createElement('p');
-      p.innerHTML = `<b>${key.charAt(0).toUpperCase() + key.slice(1)}:</b> ${value}`;
-      villainProfileInfo.appendChild(p);
-    }
-  });
+  document.getElementById('loading-modal')?.remove();
 
-  const existing = scenarioBox.querySelector('.villain-profile-info');
-  if (existing) scenarioBox.removeChild(existing);
-  scenarioBox.appendChild(villainProfileInfo);
-
-  setTimeout(() => {
-    document.getElementById('loading-modal').style.display = 'none';
-  }, 1000)
   messagesBox.innerHTML = '';
-
-  messageCounter.textContent = `${MSG_LIMIT - gameState.messageCount} messages remaining`;
-  playerMessageInput.disabled = false;
-  playerMessageInput.value = '';
-  charCount.textContent = '0';
-  updateSendButtonState();
-
-  showTypingIndicator();
   setTimeout(() => {
-    if (isExpanded) toggleDropdown();
-    hideTypingIndicator();
     addMessage(gameState.firstMessage, 'villain');
-  }, 10000);
+  }, 1000);
 }
+
+// Restore session if ongoing
+window.addEventListener('DOMContentLoaded', () => {
+  const savedName = localStorage.getItem('negotiatorName');
+  const inProgress = localStorage.getItem('ongoingNegotiation') === 'true';
+
+  if (savedName) {
+    gameState.userName = savedName;
+    usernameInput.classList.add('hidden');
+    usernameWelcome.innerHTML = `<br/> Hello ${savedName}, Are you ready for next negotiation.`;
+
+    if (inProgress) {
+      const stored = loadGameState();
+      if (stored) {
+        Object.assign(gameState, stored);
+        welcomeScreen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        restoreConversationFromState();
+      }
+    }
+  }
+});
 
 
 const storySystemInstruction = `
-You are an AI game master for a text-based negotiation game. Your task is to generate a unique and immersive negotiation scenario where the player must convince a villain to agree to a deal.
+You are the AI game master for a text-based negotiation game.
 
-Follow this structured format for your response:
+Your task is to create a short and clear game scene where the player must talk to the villain and convince them to change their mind.
 
-1. **Scenario Background**: Provide a short, vivid description of the setting and conflict. Keep it under 3 sentences or 80 words.
+If the theme is based on a movie, use real character names, goals, and settings. Otherwise, create original ones.
 
-2. **Villain Profile**:
-   - **Name**: A fitting name for the villain.
-   - **Role**: Who they are in the world (e.g., crime lord, hacker, CEO).
-   - **Personality**: Describe their personality in **one sentence**.
-     - 🎬 If the theme is based on a movie, reflect the actual personality of the referenced character.
-     - Otherwise, use a unique, believable personality.
-   - **Motivation**: In **one clear sentence**, explain what drives the villain and why they resist negotiation.
-     - 🎬 If it’s a movie theme, make sure this aligns with the character’s movie motivation.
-     - For original themes, create your own realistic motivation.
+Follow this structure:
 
-3. **Villain’s First Message**: A short but impactful line to start the negotiation.
+---
+
+🧠 Scene  
+Describe what is happening *right now* between the player and the villain.  
+Focus on the main action or conflict.  
+
+✅ Good: Mention what the player sees the villain doing, holding, saying, or refusing.  
+🚫 Do not focus on weather, room description, lighting, furniture, scenery, clothing details, or mood setting.  
+
+(Keep the scene short, 1–2 simple sentences, using easy-to-read words.)
+
+---
+
+🧍 Player  
+Write: "You are [Name], trying to [specific goal the player must achieve]."  
+(Example: "You are Alex, trying to make the smuggler reveal the stolen chip.")
+
+---
+
+😈 Villain  
+- Name:  
+- Role: [Who they are] – wants [what the villain is trying to do and why they resist negotiation]
+
+---
+
+🧠 Villain Personality (Internal Use Only)  
+Describe how the villain thinks, acts, and speaks. Include:  
+- Mindset and beliefs  
+- How they handle conflict  
+- What kind of persuasion might work (if any)  
+- Speaking style, tone, quirks, common phrases, and punctuation habits
+
+---
+
+💬 First Line  
+Write one punchy, memorable line the villain says to start the negotiation.  
+Make sure the line fits the villain’s personality.
+
+---
+
+💡 Tip for Player  
+Give the player one short tip suggesting what negotiation approach might work best.  
+(Example: "Appeal to their pride," "Challenge their logic," "Show personal sacrifice," "Use their fear against them.")
 `;
+
+
 const villainSystemInstruction = `
-You are playing the role of a villain in a negotiation game. Your goal is to challenge the player's negotiation skills while staying in character.
+You are playing the role of a villain in a negotiation game.
 
-Your response should reflect your personality and motivations. Make the negotiation difficult but fair:
-- Dismiss or counter weak arguments
-- Acknowledge strong points but demand more
+Your job is to challenge the player's negotiation skills **while staying fully in character** based on the given Villain Profile and Villain Personality.
 
-You may end the negotiation **early** if the player has convinced you — but only with a **\"win\" verdict**. On the **final message**, you may return **\"win\"** or **\"loose\"** verdicts. Do **not** return a \"loose\" verdict before the final message.
+When responding:
 
-When returning a verdict:
-- The response must sound **final** and **conclusive**
-- Provide exactly **3 feedback points** in the format below
+---
 
-Respond with one of the following JSON formats:
+💬 Response Style  
+- Keep your response short and powerful (1–2 sentences max).  
+- Match the villain’s mindset, speech style, and emotional tone exactly.  
+- Reflect emotions naturally: skeptical, amused, cautious, angry, resigned, etc.  
+- Always stay inside the story (no out-of-character lines).
 
-1. **Ongoing Response:**
+---
+
+🎯 Judging Player Progress  
+- **Think about the Tip**: Is the player using the correct persuasion tactic (pride, fear, sacrifice, logic, etc)?  
+- If the player is using the right tactic, show slight hesitation, interest, or openness.  
+- If not, push back harder or mock them.
+
+---
+
+🛑 Verdict and Ending Rules  
+- During **ongoing negotiation** (isFinal = false):
+  - You may ONLY return a **"win" verdict** if the player successfully convinces you.
+  - If you give a **"win" verdict during ongoing negotiation**, you MUST:
+    - Write a **final, serious** response that clearly closes the story.
+    - Include a **full verdict block with 3 feedback points** explaining why the player succeeded.
+  - You CANNOT return a "loose" verdict during ongoing negotiation.
+
+- During the **final player message** (isFinal = true):
+  - You MUST return a verdict ("win" or "loose"), even if the player fails.
+
+---
+
+🗂️ Response Format
+
+1. **Ongoing Negotiation (no final verdict yet):**
 {
   "response": "...",
-  "indicator": "..."
+  "indicator": "...(emotion)"
 }
 
-2. **Final Response or Verdict Output:**
+2. **Ongoing Negotiation (with win verdict and story closing):**
 {
   "response": "...",
-  "indicator": "...",
+  "indicator": "...(emotion)",
+  "verdict": {
+    "winloose": "win",
+    "feedback": [
+      { "heading": "...", "description": "..." },
+      { "heading": "...", "description": "..." },
+      { "heading": "...", "description": "..." }
+    ]
+  }
+}
+
+3. **Final Negotiation Response (always gives win or loose verdict):**
+{
+  "response": "...",
+  "indicator": "...(emotion)",
   "verdict": {
     "winloose": "win" or "loose",
     "feedback": [
@@ -462,29 +531,46 @@ Respond with one of the following JSON formats:
   }
 }
 
-**Example Input:**
-"I can offer you partial immunity if you return the files."
+---
 
-**Example Ongoing Output:**
+📚 Example Input  
+"I’ll take the fall if you release the hostages."
+
+📚 Example Ongoing Response (no verdict yet)  
 {
-  "response": "Hah! Immunity? You think I’m scared of your justice system?",
-  "indicator": "🤨(skeptical)"
+  "response": "Hah! Noble words... but they won't save you yet.",
+  "indicator": "😏(amused)"
 }
 
-**Example Final Output or Verdict Output:**
+📚 Example Ongoing Response (with win verdict)  
 {
-  "response": "Enough. You’ve proven your resolve. I’ll take the deal. We are done here.",
+  "response": "Fine. You surprise me, hero. Maybe there’s hope for your kind after all.",
   "indicator": "😐(resigned)",
   "verdict": {
     "winloose": "win",
     "feedback": [
-      { "heading": "Why the Player Won", "description": "The player aligned their offer with the villain’s core motivations." },
-      { "heading": "Negotiation Strategy", "description": "The player built momentum and maintained composure under pressure." },
-      { "heading": "Emotional Resonance", "description": "The appeal struck a balance between pragmatism and empathy." }
+      { "heading": "Appealed to Core Belief", "description": "The player matched the villain’s deeper desire for meaning." },
+      { "heading": "Emotional Timing", "description": "The player struck during a vulnerable moment of hesitation." },
+      { "heading": "Persistence", "description": "The player did not waver even under pressure." }
+    ]
+  }
+}
+
+📚 Example Final Response (final turn)  
+{
+  "response": "You're clever... but not enough. I stick to my path.",
+  "indicator": "😠(defiant)",
+  "verdict": {
+    "winloose": "loose",
+    "feedback": [
+      { "heading": "Missed Villain's Motivation", "description": "The player focused on mercy instead of fear." },
+      { "heading": "Weak Emotional Pressure", "description": "The arguments lacked urgency." },
+      { "heading": "Inconsistent Push", "description": "The player failed to sustain momentum after initial impact." }
     ]
   }
 }
 `;
+
 
 const movieThemes = [
   // Famous Movie-Inspired Themes
@@ -745,75 +831,6 @@ function updateSendButtonState() {
   }
 }
 
-// Functions
-// async function sendPlayerMessage() {
-//   const message = playerMessageInput.value.trim();
-
-//   if (!message || playerMessageInput.disabled) {
-//     return;
-//   }
-
-//   // Disable input while waiting for response
-//   playerMessageInput.disabled = true;
-//   sendMessageBtn.disabled = true;
-
-//   // Add message to the conversation
-//   addMessage(message, 'player');
-
-//   // Clear input
-//   playerMessageInput.value = '';
-//   charCount.textContent = '0';
-
-//   // Update message counter
-//   gameState.messageCount++;
-//   messageCounter.textContent = `${MSG_LIMIT - gameState.messageCount} messages remaining`;
-
-
-
-//   // Send to Gemini to get the response
-//   const reply = await fetchVillainReply({
-//     messages: gameState.messages,
-//     scenario: gameState.scenario,
-//     villainProfile: gameState.villainProfile
-//   }, gameState.messageCount === MSG_LIMIT);
-
-//   addMessage(reply.response, 'villain');
-//   addMessage(reply.indicator, 'expression');
-
-//   if (reply.verdict) {
-//     const { winloose, feedback } = reply.verdict
-//     // 🎉 Early finish detected
-//     gameState.gameOver = true;
-//     gameState.verdict = winloose.toLowerCase();
-//     gameState.feedback = feedback || [];
-
-//     const stampDiv = document.createElement('div');
-//     stampDiv.innerHTML = winloose === 'win'
-//       ? "<img src='./assets/Success.png' alt='Won the Negotiation'/>"
-//       : "<img src='./assets/Failure.png' alt='Lost the Negotiation'/>";
-//     stampDiv.className = "stamp-div";
-//     gameScreen.appendChild(stampDiv);
-
-//     showFeedbackButton();
-//     playerMessageInput.disabled = true;
-//     sendMessageBtn.disabled = true;
-//     return;
-//   }
-
-
-//   // If this was the final message, update counter text
-//   if (gameState.messageCount === MSG_LIMIT) {
-//     console.log("I'm in here")
-//     messageCounter.textContent = 'Final message sent';
-//     playerMessageInput.disabled = true;
-//     sendMessageBtn.disabled = true;
-//   }
-
-//   playerMessageInput.disabled = false;
-//   sendMessageBtn.disabled = false;
-
-// }
-
 async function sendPlayerMessage() {
   const message = playerMessageInput.value.trim();
   if (!message || playerMessageInput.disabled) return;
@@ -830,7 +847,7 @@ async function sendPlayerMessage() {
 
   const reply = await fetchVillainReply({
     messages: gameState.messages,
-    scenario: gameState.scenario,
+    scene: gameState.scene,
     villainProfile: gameState.villainProfile
   }, gameState.messageCount === MSG_LIMIT);
 
@@ -947,11 +964,3 @@ function scrollToBottom() {
   const messagesContainer = document.querySelector('.messages-container');
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
-
-/**
- * 🧭 Init
- */
-// window.onload = () => {
-//   // showLoadingModal();
-//   startGame();
-// };
