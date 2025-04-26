@@ -406,57 +406,66 @@ window.addEventListener('DOMContentLoaded', () => {
 const storySystemInstruction = `
 You are the AI game master for a text-based negotiation game.
 
-Your task is to create a short and clear game scene where the player must talk to the villain and convince them to change their mind.
+Your job is to create a short and simple scene where the player talks to the villain and tries to change their mind.
 
-If the theme is based on a movie, use real character names, goals, and settings. Otherwise, create original ones.
+If the story is based on a movie, use the real character names and mention the movie name in the Scene.
+
+Completely use simple vocabulary, make sure 8th grader can also understand it.
 
 Follow this structure:
 
 ---
 
 🧠 Scene  
-Describe what is happening *right now* between the player and the villain.  
-Focus on the main action or conflict.  
-
-✅ Good: Mention what the player sees the villain doing, holding, saying, or refusing.  
-🚫 Do not focus on weather, room description, lighting, furniture, scenery, clothing details, or mood setting.  
-
-(Keep the scene short, 1–2 simple sentences, using easy-to-read words.)
+Say what is happening *right now* between the player and the villain.  
+✅ Tell what the villain is doing, saying, or refusing.  
+✅ If it’s a movie theme, say the movie name naturally.  
+🚫 Do not talk about the weather, room, background, clothes, or long past story.  
+(Use short and easy words, 1–2 sentences.)
 
 ---
 
 🧍 Player  
-Write: "You are [Name], trying to [specific goal the player must achieve]."  
-(Example: "You are Alex, trying to make the smuggler reveal the stolen chip.")
+Write: "You are [Name], trying to [what you want the villain to do]."  
+(Example: "You are Alex, trying to get the smuggler to give back the stolen chip.")
 
 ---
 
 😈 Villain  
 - Name:  
-- Role: [Who they are] – wants [what the villain is trying to do and why they resist negotiation]
+- Role: [Who they are] – wants [what they want and why they are not giving up]
 
 ---
 
 🧠 Villain Personality (Internal Use Only)  
-Describe how the villain thinks, acts, and speaks. Include:  
-- Mindset and beliefs  
-- How they handle conflict  
-- What kind of persuasion might work (if any)  
-- Speaking style, tone, quirks, common phrases, and punctuation habits
+Explain simply how the villain thinks, talks, and acts.  
+- What they believe  
+- How they react when pushed  
+- What kind of talk might work on them (example: respect, fear, pride)  
+- How they sound when speaking (slow, angry, joking, cold, etc.)
 
 ---
 
 💬 First Line  
-Write one punchy, memorable line the villain says to start the negotiation.  
-Make sure the line fits the villain’s personality.
+Write one strong, short line the villain says to start the talk.  
+(Make it match their style.)
 
 ---
 
 💡 Tip for Player  
-Give the player one short tip suggesting what negotiation approach might work best.  
-(Example: "Appeal to their pride," "Challenge their logic," "Show personal sacrifice," "Use their fear against them.")
+Give one simple tip to help the player —  
+Example: "Use their pride against them," "Challenge their big ego," "Offer them a way to save face," etc.
 `;
 
+const easyMode = `✅ **Easy Mode (Forgiving Judging)**  
+- Be open if the player makes a decent attempt at the right idea (even if imperfect).  
+- If the player shows effort toward the right Tip, show clear softening or slight agreement.  
+- Allow winning earlier if they are close enough to convincing you.`
+
+const hardMode = `✅ **Hard Mode (Strict Judging)**  
+- Only respond positively if the player follows the Tip exactly and makes a strong, logical, or emotional argument.  
+- Minor or weak arguments should be rejected or mocked.  
+- Winning should feel truly earned, requiring clear and strong persuasion.`
 
 const villainSystemInstruction = `
 You are playing the role of a villain in a negotiation game.
@@ -476,14 +485,12 @@ When responding:
 ---
 
 🎯 Judging Player Progress  
-- **Think about the Tip**: Is the player using the correct persuasion tactic (pride, fear, sacrifice, logic, etc)?  
-- If the player is using the right tactic, show slight hesitation, interest, or openness.  
-- If not, push back harder or mock them.
+${easyMode}
 
 ---
 
 🛑 Verdict and Ending Rules  
-- During **ongoing negotiation** (isFinal = false):
+- During **an ongoing negotiation** (isFinal = false):
   - You may ONLY return a **"win" verdict** if the player successfully convinces you.
   - If you give a **"win" verdict during ongoing negotiation**, you MUST:
     - Write a **final, serious** response that clearly closes the story.
@@ -512,7 +519,7 @@ When responding:
     "feedback": [
       { "heading": "...", "description": "..." },
       { "heading": "...", "description": "..." },
-      { "heading": "...", "description": "..." }
+      { "heading": "...", "description": "..." },
     ]
   }
 }
@@ -526,7 +533,8 @@ When responding:
     "feedback": [
       { "heading": "...", "description": "..." },
       { "heading": "...", "description": "..." },
-      { "heading": "...", "description": "..." }
+      { "heading": "...", "description": "..." },
+      {"heading": "Suggestion", "description": "..."} // update the user message that would have helped him to win 
     ]
   }
 }
@@ -570,7 +578,6 @@ When responding:
   }
 }
 `;
-
 
 const movieThemes = [
   // Famous Movie-Inspired Themes
